@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ed30971fdea4c98b58606665b027a8, type: 3}
+  m_Name: Draft_This
+  m_EditorClassIdentifier: 
+  taskTitle: Draft This
+  taskDescription: 'What is the best investment strategy '
+  messageToType: "The best long-term investment strategy for most people is consistent
+    investing in low-cost, diversified index funds while avoiding emotional decision-making.
+    Regularly contributing (like monthly) to broad market ETFs such as an S&P 500
+    or total market fund allows you to benefit from compound growth over time. Keep
+    fees low, reinvest dividends, and hold through market downturns instead of trying
+    to time the market. The real edge isn\u2019t picking stocks \u2014 it\u2019s
+    staying disciplined for 10\u201320+ years."
+  minimumKeyPresses: 0
+  completionDelay: 2.5

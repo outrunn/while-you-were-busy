@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ed30971fdea4c98b58606665b027a8, type: 3}
+  m_Name: Type_this
+  m_EditorClassIdentifier: 
+  taskTitle: Type this
+  taskDescription: I want an email to my teacher asking for off!
+  messageToType: "I hope you\u2019re doing well. I\u2019m writing to ask if I could
+    please be excused from class on [date]. I have a prior commitment that I\u2019m
+    unable to reschedule.\n\nI will make sure to review any material covered, complete
+    all assignments on time, and reach out to classmates for notes so I don\u2019t
+    fall behind. \n\nThank you for your understanding."
+  minimumKeyPresses: 0
+  completionDelay: 2.5
