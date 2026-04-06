@@ -103,26 +103,65 @@ public class TaskDatabase : MonoBehaviour
         mediumTasks.Clear();
         hardTasks.Clear();
 
-        // Easy tasks
+        // Easy tasks (Days 1+)
         AddTypingTask(easyTasks, "Draft Status Email", "Compose a brief status update", 15f, 1);
         AddTypingTask(easyTasks, "Quick System Update", "Send quick notification", 12f, 1);
         AddTypingTask(easyTasks, "Meeting Confirmation", "Confirm meeting attendance", 10f, 1);
         AddTypingTask(easyTasks, "Daily Log Entry", "Record daily activities", 12f, 1);
         AddTypingTask(easyTasks, "Backup Confirmation", "Confirm backup completion", 10f, 1);
 
-        // Medium tasks
+        // Medium tasks (Days 2+)
         AddTypingTask(mediumTasks, "Security Protocol Update", "Document new security measures", 65f, 2);
         AddTypingTask(mediumTasks, "Meeting Minutes", "Record system status meeting", 60f, 2);
         AddTypingTask(mediumTasks, "Performance Report", "Draft quarterly performance analysis", 70f, 2);
         AddTypingTask(mediumTasks, "Stakeholder Email", "Compose update for stakeholders", 55f, 2);
         AddTypingTask(mediumTasks, "Technical Documentation", "Document system changes", 65f, 2);
 
-        // Hard tasks
+        // Data Entry tasks (Days 2+)
+        AddDataEntryTask(mediumTasks, "Match Sequence 4-digit", "Reproduce 4-digit number", 50f, 2);
+        AddDataEntryTask(mediumTasks, "Match Sequence 5-digit", "Reproduce 5-digit number", 60f, 2);
+
+        // Hard tasks (Days 3+)
         AddTypingTask(hardTasks, "Incident Report", "File detailed incident analysis", 250f, 3);
         AddTypingTask(hardTasks, "System Architecture Document", "Draft comprehensive technical documentation", 280f, 3);
         AddTypingTask(hardTasks, "Executive Summary", "Prepare executive briefing", 300f, 3);
         AddTypingTask(hardTasks, "Audit Response", "Respond to compliance audit", 270f, 3);
         AddTypingTask(hardTasks, "Crisis Communication", "Draft urgent stakeholder communication", 290f, 3);
+
+        // File Sorting tasks (Days 3+)
+        AddFileSortingTask(hardTasks, "Sort Records by Date", "Arrange records chronologically", 180f, 3);
+        AddFileSortingTask(hardTasks, "Organize Archives", "Sort historical documents", 200f, 3);
+
+        // Form Review tasks (Days 4+)
+        AddFormReviewTask(hardTasks, "Verify Expense Form", "Find the error in expense report", 150f, 3);
+        AddFormReviewTask(hardTasks, "Audit Employee Record", "Spot the mistake in personnel form", 170f, 3);
+    }
+
+    /// <summary>
+    /// Add a data entry task
+    /// </summary>
+    private void AddDataEntryTask(List<TaskData> taskPool, string title, string description, float reward, int difficulty)
+    {
+        TaskData taskData = new TaskData(title, description, reward, difficulty);
+        taskPool.Add(taskData);
+    }
+
+    /// <summary>
+    /// Add a file sorting task
+    /// </summary>
+    private void AddFileSortingTask(List<TaskData> taskPool, string title, string description, float reward, int difficulty)
+    {
+        TaskData taskData = new TaskData(title, description, reward, difficulty);
+        taskPool.Add(taskData);
+    }
+
+    /// <summary>
+    /// Add a form review task
+    /// </summary>
+    private void AddFormReviewTask(List<TaskData> taskPool, string title, string description, float reward, int difficulty)
+    {
+        TaskData taskData = new TaskData(title, description, reward, difficulty);
+        taskPool.Add(taskData);
     }
 
     /// <summary>
@@ -183,6 +222,23 @@ public class TaskDatabase : MonoBehaviour
 
         // Fallback task if pool is empty
         return new TaskData("Generic Task", "Process outputs efficiently", 10f, 1);
+    }
+
+    /// <summary>
+    /// Get a random task based on current game day (gates minigame types)
+    /// </summary>
+    public TaskData GetRandomTaskForDay(int currentDay, int difficultyLevel)
+    {
+        EnsureInitialized();
+
+        // Day 1: typing only
+        // Days 2+: typing + data entry
+        // Days 3+: typing + data entry + file sorting
+        // Days 4+: all types (+ form review)
+
+        // For now, return a random task from the appropriate difficulty pool
+        // The task type gating will be handled in UI layer
+        return GetRandomTask(difficultyLevel);
     }
 
     /// <summary>

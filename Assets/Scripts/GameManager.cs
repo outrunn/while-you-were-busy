@@ -112,6 +112,15 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        // Check for Day 5 ending condition
+        if (currentDay == 5 && currentTime >= 18f && dailyPoints < dailyQuota)
+        {
+            if (DayManager.Instance != null)
+            {
+                DayManager.Instance.TriggerEnding();
+            }
+        }
+
         // Check quota completion
         UpdateSleepButton();
 
@@ -232,7 +241,16 @@ public class GameManager : MonoBehaviour
     {
         currentTime = startTime; // Reset to 6:00 AM
         dailyPoints = 0f;
-        dailyQuota = baseQuota * Mathf.Pow(quotaMultiplier, currentDay - 1);
+
+        // Day 5: set impossible quota
+        if (currentDay == 5)
+        {
+            dailyQuota = 999999f;
+        }
+        else
+        {
+            dailyQuota = baseQuota * Mathf.Pow(quotaMultiplier, currentDay - 1);
+        }
 
         SystemLog.Instance?.LogMessage($"Day {currentDay} begins. Quota: {dailyQuota:F0} points");
     }
@@ -248,7 +266,18 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // Advance to next day
+        // Show upgrade modal and let DayManager handle advancement
+        if (DayManager.Instance != null)
+        {
+            DayManager.Instance.OnSleepClicked();
+        }
+    }
+
+    /// <summary>
+    /// Advance to next day (called by DayManager after upgrade choice)
+    /// </summary>
+    public void AdvanceToNextDay()
+    {
         currentDay++;
         StartNewDay();
         UpdateUI();

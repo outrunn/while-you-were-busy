@@ -112,7 +112,7 @@ public class Printer : MonoBehaviour
         }
 
         int difficulty = TaskDatabase.Instance.GetDifficultyForCurrentProgress();
-        TaskData task = TaskDatabase.Instance.GetRandomTask(difficulty);
+        TaskData task = TaskDatabase.Instance.GetRandomTaskForDay(GameManager.Instance?.GetCurrentDay() ?? 1, difficulty);
 
         // Create ticket
         if (ticketPrefab != null && ticketSpawnPoint != null)
