@@ -145,7 +145,23 @@ public class Printer : MonoBehaviour
             // Position it at the spawn point
             if (ticketRect != null)
             {
-                ticketRect.position = ticketSpawnPoint.position;
+                // Use anchoredPosition for Canvas UI
+                RectTransform spawnPointRect = ticketSpawnPoint as RectTransform;
+                if (spawnPointRect != null)
+                {
+                    ticketRect.anchoredPosition = spawnPointRect.anchoredPosition;
+                }
+                else
+                {
+                    // Fallback: convert world position to canvas local position
+                    RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                        rootCanvas != null ? rootCanvas.GetComponent<RectTransform>() : (RectTransform)spawnParent,
+                        RectTransformUtility.WorldToScreenPoint(null, ticketSpawnPoint.position),
+                        rootCanvas != null ? rootCanvas.worldCamera : null,
+                        out Vector2 localPos
+                    );
+                    ticketRect.anchoredPosition = localPos;
+                }
                 ticketRect.localScale = Vector3.one; // Ensure proper scale
             }
 
@@ -235,15 +251,15 @@ public class Printer : MonoBehaviour
     /// </summary>
     private IEnumerator AnimateTicketToBoard(Ticket ticket, GameObject ticketObj, RectTransform rectTransform)
     {
-        Vector3 startPosition = rectTransform.position;
+        Vector2 startPosition = rectTransform.anchoredPosition;
         Vector3 startScale = Vector3.one;
         Vector3 targetScale = new Vector3(0.3f, 0.3f, 1f);
 
         // Get target position from bulletin board
-        Vector3 targetPosition = startPosition;
+        Vector2 targetPosition = startPosition;
         if (bulletinBoard != null)
         {
-            targetPosition = bulletinBoard.GetNextSlotWorldPosition();
+            targetPosition = bulletinBoard.GetNextSlotAnchoredPosition();
         }
 
         float elapsed = 0f;
@@ -253,8 +269,8 @@ public class Printer : MonoBehaviour
             float t = elapsed / travelDuration;
             t = Mathf.SmoothStep(0, 1, t);
 
-            // Lerp position from printer to board
-            rectTransform.position = Vector3.Lerp(startPosition, targetPosition, t);
+            // Lerp position from printer to board (using anchored position for UI)
+            rectTransform.anchoredPosition = Vector2.Lerp(startPosition, targetPosition, t);
 
             // Scale down as it travels
             rectTransform.localScale = Vector3.Lerp(startScale, targetScale, t);
@@ -263,7 +279,7 @@ public class Printer : MonoBehaviour
         }
 
         // Ensure final values
-        rectTransform.position = targetPosition;
+        rectTransform.anchoredPosition = targetPosition;
         rectTransform.localScale = targetScale;
 
         // Pin the ticket to the bulletin board

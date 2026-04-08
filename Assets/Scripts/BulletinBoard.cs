@@ -152,9 +152,9 @@ public class BulletinBoard : MonoBehaviour, IDropHandler
     }
 
     /// <summary>
-    /// Get the world position where the next ticket will be pinned
+    /// Get the anchored position where the next ticket will be pinned
     /// </summary>
-    public Vector3 GetNextSlotWorldPosition()
+    public Vector2 GetNextSlotAnchoredPosition()
     {
         int nextIndex = pinnedTickets.Count;
         int row = nextIndex / ticketsPerRow;
@@ -163,14 +163,7 @@ public class BulletinBoard : MonoBehaviour, IDropHandler
         float xPos = col * (ticketSize.x + ticketSpacing);
         float yPos = -row * (ticketSize.y + ticketSpacing);
 
-        Vector2 localPos = new Vector2(xPos, yPos);
-
-        if (ticketContainer != null && ticketContainer is RectTransform rectTransform)
-        {
-            return rectTransform.TransformPoint(localPos);
-        }
-
-        return Vector3.zero;
+        return new Vector2(xPos, yPos);
     }
 
     // Public getters
