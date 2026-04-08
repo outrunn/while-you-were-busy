@@ -341,21 +341,32 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        Debug.Log($"Ticket.OnEndDrag: {taskTitle}, pointerEnter={eventData.pointerEnter?.name}");
+        Debug.Log($"===== Ticket.OnEndDrag: {taskTitle}, pointerEnter={eventData.pointerEnter?.name} =====");
         canvasGroup.alpha = 1f;
         canvasGroup.blocksRaycasts = true;
 
         // Check if dropped on Shredder
         if (eventData.pointerEnter != null)
         {
+            Debug.Log($"PointerEnter is: {eventData.pointerEnter.name}");
+
             ShredderUI shredder = eventData.pointerEnter.GetComponent<ShredderUI>();
             if (shredder != null)
             {
-                Debug.Log($"Detected drop on Shredder! Calling OnDrop manually");
+                Debug.Log($"===== FOUND SHREDDER! Calling OnDrop manually =====");
                 // Create a fake drop event and trigger shredder's OnDrop
                 shredder.OnDrop(eventData);
+                Debug.Log($"===== OnDrop call complete =====");
                 return;
             }
+            else
+            {
+                Debug.Log($"No ShredderUI component on {eventData.pointerEnter.name}");
+            }
+        }
+        else
+        {
+            Debug.Log("PointerEnter is NULL");
         }
 
         // Check if dropped on valid target (bulletin board or processing machine)

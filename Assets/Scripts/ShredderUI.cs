@@ -76,7 +76,7 @@ public class ShredderUI : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
     /// </summary>
     public void OnDrop(PointerEventData eventData)
     {
-        Debug.Log("ShredderUI.OnDrop called!");
+        Debug.Log("===== ShredderUI.OnDrop called! =====");
 
         if (!allowDrops)
         {
@@ -98,8 +98,9 @@ public class ShredderUI : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
                 // Only shred completed (stamped) tickets
                 if (ticket.IsStamped())
                 {
-                    Debug.Log("Ticket is stamped - shredding!");
+                    Debug.Log("===== Ticket is STAMPED - SHREDDING NOW! =====");
                     ShredTicket(ticket);
+                    Debug.Log("===== SHRED COMPLETE =====");
                 }
                 else
                 {
