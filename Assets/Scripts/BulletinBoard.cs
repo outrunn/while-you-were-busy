@@ -151,6 +151,28 @@ public class BulletinBoard : MonoBehaviour, IDropHandler
         pinnedTickets.Clear();
     }
 
+    /// <summary>
+    /// Get the world position where the next ticket will be pinned
+    /// </summary>
+    public Vector3 GetNextSlotWorldPosition()
+    {
+        int nextIndex = pinnedTickets.Count;
+        int row = nextIndex / ticketsPerRow;
+        int col = nextIndex % ticketsPerRow;
+
+        float xPos = col * (ticketSize.x + ticketSpacing);
+        float yPos = -row * (ticketSize.y + ticketSpacing);
+
+        Vector2 localPos = new Vector2(xPos, yPos);
+
+        if (ticketContainer != null && ticketContainer is RectTransform rectTransform)
+        {
+            return rectTransform.TransformPoint(localPos);
+        }
+
+        return Vector3.zero;
+    }
+
     // Public getters
     public int GetPinnedCount() => pinnedTickets.Count;
     public int GetMaxCapacity() => maxPinnedTickets;

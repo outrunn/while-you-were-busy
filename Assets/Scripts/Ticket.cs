@@ -2,11 +2,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
+using System.Collections;
 
 /// <summary>
 /// Represents a task ticket that can be printed, pinned, stamped, and processed.
+/// Supports mini form (pinned on board) and expanded form (shows details).
 /// </summary>
-public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
 {
     [Header("Ticket Data")]
     [SerializeField] private string taskTitle;
@@ -18,6 +20,7 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
     [Header("Ticket State")]
     [SerializeField] private bool isStamped = false;
     [SerializeField] private bool isPinned = false;
+    private bool isExpanded = false;
 
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI titleText;
@@ -26,10 +29,16 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private Button startTaskButton; // Button to start minigame
 
+    [Header("Mini/Expand Views")]
+    [SerializeField] private GameObject miniView; // Small version on board
+    [SerializeField] private GameObject expandedView; // Full details view
+    [SerializeField] private float expandDuration = 0.3f;
+
     private Canvas canvas;
     private RectTransform rectTransform;
     private Vector2 originalPosition;
     private Transform originalParent;
+    private Coroutine expandCoroutine;
 
     private void Awake()
     {
@@ -53,6 +62,17 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         {
             startTaskButton.onClick.AddListener(OnStartTaskButtonClicked);
             startTaskButton.gameObject.SetActive(false); // Hidden by default
+        }
+
+        // Setup mini/expanded views
+        if (miniView != null)
+        {
+            miniView.SetActive(true);
+        }
+
+        if (expandedView != null)
+        {
+            expandedView.SetActive(false);
         }
     }
 
@@ -171,9 +191,19 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         {
             isStamped = true;
 
-            if (stampImage != null)
+            // Show approval stamp animation over this ticket
+            TicketCompletionStamp stampAnimator = FindFirstObjectByType<TicketCompletionStamp>();
+            if (stampAnimator != null)
             {
-                stampImage.gameObject.SetActive(true);
+                stampAnimator.ShowStampAtTicket(GetComponent<RectTransform>());
+            }
+            else
+            {
+                // Fallback: show the stamp image if no animator found
+                if (stampImage != null)
+                {
+                    stampImage.gameObject.SetActive(true);
+                }
             }
 
             // Hide the START TASK button after completion
@@ -235,6 +265,64 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
 
         // Check if dropped on valid target (bulletin board or processing machine)
         // This will be handled by drop zones
+    }
+
+    /// <summary>
+    /// Handle click on ticket to toggle expanded view
+    /// </summary>
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        ToggleExpand();
+    }
+
+    /// <summary>
+    /// Toggle between mini and expanded views with scale animation
+    /// </summary>
+    public void ToggleExpand()
+    {
+        if (expandCoroutine != null)
+        {
+            StopCoroutine(expandCoroutine);
+        }
+
+        expandCoroutine = StartCoroutine(ExpandCoroutine(!isExpanded));
+    }
+
+    /// <summary>
+    /// Coroutine to animate expand/collapse
+    /// </summary>
+    private IEnumerator ExpandCoroutine(bool shouldExpand)
+    {
+        Vector3 startScale = rectTransform.localScale;
+        Vector3 endScale = shouldExpand ? Vector3.one : new Vector3(0.3f, 0.3f, 1f);
+
+        float elapsed = 0f;
+        while (elapsed < expandDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / expandDuration;
+            t = Mathf.SmoothStep(0, 1, t);
+
+            rectTransform.localScale = Vector3.Lerp(startScale, endScale, t);
+
+            yield return null;
+        }
+
+        rectTransform.localScale = endScale;
+        isExpanded = shouldExpand;
+
+        // Swap views
+        if (miniView != null)
+        {
+            miniView.SetActive(!shouldExpand);
+        }
+
+        if (expandedView != null)
+        {
+            expandedView.SetActive(shouldExpand);
+        }
+
+        expandCoroutine = null;
     }
 
     // Public getters

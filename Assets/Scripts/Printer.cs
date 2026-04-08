@@ -27,6 +27,10 @@ public class Printer : MonoBehaviour
     [Header("Audio")]
     [SerializeField] private AudioSource printSound;
 
+    [Header("Board Animation")]
+    [SerializeField] private BulletinBoard bulletinBoard;
+    [SerializeField] private float travelDuration = 0.8f;
+
     private float timeSinceLastPrint = 0f;
     private int activeTicketCount = 0;
 
@@ -50,6 +54,10 @@ public class Printer : MonoBehaviour
 
         // Show the printer panel once the game is ready
         Show();
+
+        // Print first ticket immediately on play
+        PrintTicket();
+        timeSinceLastPrint = 0f;
 
         UpdateStatusUI();
     }
@@ -148,6 +156,12 @@ public class Printer : MonoBehaviour
                 {
                     printSound.Play();
                 }
+
+                // Animate ticket from printer to bulletin board
+                if (bulletinBoard != null)
+                {
+                    StartCoroutine(AnimateTicketToBoard(ticket, ticketObj, ticketRect));
+                }
             }
         }
         else
@@ -204,6 +218,49 @@ public class Printer : MonoBehaviour
     {
         autoPrintEnabled = !autoPrintEnabled;
         SystemLog.Instance?.LogMessage($"Auto-print: {(autoPrintEnabled ? "ON" : "OFF")}");
+    }
+
+    /// <summary>
+    /// Animate ticket from printer spawn point to bulletin board slot
+    /// </summary>
+    private IEnumerator AnimateTicketToBoard(Ticket ticket, GameObject ticketObj, RectTransform rectTransform)
+    {
+        Vector3 startPosition = rectTransform.position;
+        Vector3 startScale = Vector3.one;
+        Vector3 targetScale = new Vector3(0.3f, 0.3f, 1f);
+
+        // Get target position from bulletin board
+        Vector3 targetPosition = startPosition;
+        if (bulletinBoard != null)
+        {
+            targetPosition = bulletinBoard.GetNextSlotWorldPosition();
+        }
+
+        float elapsed = 0f;
+        while (elapsed < travelDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / travelDuration;
+            t = Mathf.SmoothStep(0, 1, t);
+
+            // Lerp position from printer to board
+            rectTransform.position = Vector3.Lerp(startPosition, targetPosition, t);
+
+            // Scale down as it travels
+            rectTransform.localScale = Vector3.Lerp(startScale, targetScale, t);
+
+            yield return null;
+        }
+
+        // Ensure final values
+        rectTransform.position = targetPosition;
+        rectTransform.localScale = targetScale;
+
+        // Pin the ticket to the bulletin board
+        if (bulletinBoard != null)
+        {
+            bulletinBoard.PinTicket(ticket);
+        }
     }
 
     // Public getters/setters
