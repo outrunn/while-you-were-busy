@@ -129,8 +129,8 @@ public class Printer : MonoBehaviour
             return;
         }
 
-        int difficulty = TaskDatabase.Instance.GetDifficultyForCurrentProgress();
-        TaskData task = TaskDatabase.Instance.GetRandomTaskForDay(GameManager.Instance?.GetCurrentDay() ?? 1, difficulty);
+        int currentDay = GameManager.Instance?.GetCurrentDay() ?? 1;
+        TaskData task = TaskDatabase.Instance.GetRandomTaskForDay(currentDay);
 
         // Create ticket
         if (ticketPrefab != null && ticketSpawnPoint != null)
@@ -162,7 +162,8 @@ public class Printer : MonoBehaviour
                     );
                     ticketRect.anchoredPosition = localPos;
                 }
-                ticketRect.localScale = Vector3.one; // Ensure proper scale
+                // Spawn in mini mode (0.3x scale)
+                ticketRect.localScale = new Vector3(0.3f, 0.3f, 1f);
             }
 
             Ticket ticket = ticketObj.GetComponent<Ticket>();
@@ -252,8 +253,7 @@ public class Printer : MonoBehaviour
     private IEnumerator AnimateTicketToBoard(Ticket ticket, GameObject ticketObj, RectTransform rectTransform)
     {
         Vector2 startPosition = rectTransform.anchoredPosition;
-        Vector3 startScale = Vector3.one;
-        Vector3 targetScale = new Vector3(0.3f, 0.3f, 1f);
+        Vector3 miniScale = new Vector3(0.3f, 0.3f, 1f);
 
         // Get target position from bulletin board
         Vector2 targetPosition = startPosition;
@@ -272,15 +272,15 @@ public class Printer : MonoBehaviour
             // Lerp position from printer to board (using anchored position for UI)
             rectTransform.anchoredPosition = Vector2.Lerp(startPosition, targetPosition, t);
 
-            // Scale down as it travels
-            rectTransform.localScale = Vector3.Lerp(startScale, targetScale, t);
+            // Keep mini scale during travel (ticket already spawned at 0.3x)
+            rectTransform.localScale = miniScale;
 
             yield return null;
         }
 
         // Ensure final values
         rectTransform.anchoredPosition = targetPosition;
-        rectTransform.localScale = targetScale;
+        rectTransform.localScale = miniScale;
 
         // Pin the ticket to the bulletin board
         if (bulletinBoard != null)
