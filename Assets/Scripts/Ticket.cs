@@ -14,7 +14,6 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
     [SerializeField] private string taskTitle;
     [SerializeField] private string taskDescription;
     [SerializeField] private float rewardAmount = 10f;
-    [SerializeField] private int difficultyLevel = 1;
     [SerializeField] private TaskData taskData; // Store full task data for minigame access
 
     [Header("Ticket State")]
@@ -122,7 +121,6 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         taskTitle = title;
         taskDescription = description;
         rewardAmount = reward;
-        difficultyLevel = difficulty;
 
         UpdateUI();
     }
@@ -136,7 +134,6 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         taskTitle = data.title;
         taskDescription = data.description;
         rewardAmount = data.baseReward;
-        difficultyLevel = data.difficultyLevel;
 
         UpdateUI();
         UpdateMinigameButton();
@@ -193,15 +190,60 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
             return;
         }
 
-        // Start typing minigame
-        if (taskData.typingTask != null && TypingMinigameUI.Instance != null)
+        // Dispatch to appropriate minigame based on task type
+        switch (taskData.minigameType)
         {
-            TypingMinigameUI.Instance.StartMinigame(taskData.typingTask, OnMinigameCompleted);
-            Debug.Log($"Starting typing minigame for: {taskTitle}");
-        }
-        else
-        {
-            Debug.LogError("Typing task data is missing or TypingMinigameUI is not in scene!");
+            case MinigameType.Typing:
+                if (taskData.typingTask != null && TypingMinigameUI.Instance != null)
+                {
+                    TypingMinigameUI.Instance.StartMinigame(taskData.typingTask, OnMinigameCompleted);
+                    Debug.Log($"Starting typing minigame for: {taskTitle}");
+                }
+                else
+                {
+                    Debug.LogError("Typing task data missing or TypingMinigameUI not in scene!");
+                }
+                break;
+
+            case MinigameType.MultipleChoice:
+                if (MultipleChoiceMinigameUI.Instance != null)
+                {
+                    MultipleChoiceMinigameUI.Instance.StartMinigame(OnMinigameCompleted);
+                    Debug.Log($"Starting multiple choice minigame for: {taskTitle}");
+                }
+                else
+                {
+                    Debug.LogError("MultipleChoiceMinigameUI not in scene!");
+                }
+                break;
+
+            case MinigameType.Math:
+                if (MathMinigameUI.Instance != null)
+                {
+                    MathMinigameUI.Instance.StartMinigame(OnMinigameCompleted);
+                    Debug.Log($"Starting math minigame for: {taskTitle}");
+                }
+                else
+                {
+                    Debug.LogError("MathMinigameUI not in scene!");
+                }
+                break;
+
+            case MinigameType.PhotoReveal:
+                if (PhotoRevealMinigameUI.Instance != null)
+                {
+                    PhotoRevealMinigameUI.Instance.StartMinigame(OnMinigameCompleted);
+                    Debug.Log($"Starting photo reveal minigame for: {taskTitle}");
+                }
+                else
+                {
+                    Debug.LogError("PhotoRevealMinigameUI not in scene!");
+                }
+                break;
+
+            default:
+                Debug.LogError($"Unknown minigame type: {taskData.minigameType}");
+                break;
         }
     }
 
@@ -275,6 +317,7 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
     // Drag handlers for moving tickets around
     public void OnBeginDrag(PointerEventData eventData)
     {
+        Debug.Log($"Ticket.OnBeginDrag: {taskTitle}");
         originalPosition = rectTransform.anchoredPosition;
         originalParent = transform.parent;
         canvasGroup.alpha = 0.6f;
@@ -298,6 +341,7 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        Debug.Log($"Ticket.OnEndDrag: {taskTitle}, pointerEnter={eventData.pointerEnter}");
         canvasGroup.alpha = 1f;
         canvasGroup.blocksRaycasts = true;
 
@@ -375,7 +419,6 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
     public float GetReward() => rewardAmount;
     public string GetTaskTitle() => taskTitle;
     public string GetTaskDescription() => taskDescription;
-    public int GetDifficulty() => difficultyLevel;
 
     /// <summary>
     /// Reset ticket position if drag was invalid

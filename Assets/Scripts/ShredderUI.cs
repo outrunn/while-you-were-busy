@@ -68,9 +68,14 @@ public class ShredderUI : MonoBehaviour, IDropHandler
     {
         Debug.Log("ShredderUI.OnDrop called!");
 
-        if (!allowDrops) return;
+        if (!allowDrops)
+        {
+            Debug.Log("ShredderUI: Drops not allowed");
+            return;
+        }
 
         GameObject droppedObject = eventData.pointerDrag;
+        Debug.Log($"Dropped object: {(droppedObject != null ? droppedObject.name : "NULL")}");
 
         if (droppedObject != null)
         {
@@ -83,10 +88,12 @@ public class ShredderUI : MonoBehaviour, IDropHandler
                 // Only shred completed (stamped) tickets
                 if (ticket.IsStamped())
                 {
+                    Debug.Log("Ticket is stamped - shredding!");
                     ShredTicket(ticket);
                 }
                 else
                 {
+                    Debug.Log("Ticket is NOT stamped - resetting position");
                     // Reset position if not stamped
                     ticket.ResetPosition();
                     SystemLog.Instance?.LogMessage("Can only shred completed tickets!");
