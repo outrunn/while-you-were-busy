@@ -30,10 +30,10 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
     [SerializeField] private Button startTaskButton; // Button to start minigame
 
     [Header("Mini/Expand Views")]
-    [SerializeField] private GameObject miniView; // Small version on board
-    [SerializeField] private GameObject expandedView; // Full details view
     [SerializeField] private float expandDuration = 0.3f;
 
+    private GameObject miniView; // Small version on board
+    private GameObject expandedView; // Full details view
     private Canvas canvas;
     private RectTransform rectTransform;
     private Vector2 originalPosition;
@@ -64,15 +64,53 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
             startTaskButton.gameObject.SetActive(false); // Hidden by default
         }
 
+        // Auto-discover mini/expanded views using tags
+        // First try by tag, then fall back to name search
+        miniView = GameObject.FindGameObjectWithTag("MiniView");
+        if (miniView == null)
+        {
+            // Fallback: search by name in children
+            foreach (Transform child in transform)
+            {
+                if (child.name == "MiniView")
+                {
+                    miniView = child.gameObject;
+                    break;
+                }
+            }
+        }
+
+        expandedView = GameObject.FindGameObjectWithTag("ExpandedView");
+        if (expandedView == null)
+        {
+            // Fallback: search by name in children
+            foreach (Transform child in transform)
+            {
+                if (child.name == "ExpandedView")
+                {
+                    expandedView = child.gameObject;
+                    break;
+                }
+            }
+        }
+
         // Setup mini/expanded views
         if (miniView != null)
         {
             miniView.SetActive(true);
         }
+        else
+        {
+            Debug.LogWarning($"MiniView not found on ticket {gameObject.name}. Make sure it's tagged as 'MiniView'.");
+        }
 
         if (expandedView != null)
         {
             expandedView.SetActive(false);
+        }
+        else
+        {
+            Debug.LogWarning($"ExpandedView not found on ticket {gameObject.name}. Make sure it's tagged as 'ExpandedView'.");
         }
     }
 
@@ -283,6 +321,12 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         if (expandCoroutine != null)
         {
             StopCoroutine(expandCoroutine);
+        }
+
+        // Move to last sibling in hierarchy when expanding (renders on top)
+        if (!isExpanded)
+        {
+            transform.SetAsLastSibling();
         }
 
         expandCoroutine = StartCoroutine(ExpandCoroutine(!isExpanded));

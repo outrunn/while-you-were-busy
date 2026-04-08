@@ -19,7 +19,7 @@ public class TypingMinigameUI : MonoBehaviour
     [SerializeField] private Image progressBar;
 
     [Header("Settings")]
-    [SerializeField] private float typingSpeed = 0.05f; // Delay between character reveals
+    [SerializeField] private float typingSpeed = 0.05f; // TODO: implement variable typing speed
     [SerializeField] private bool showProgressBar = true;
 
     // Current minigame state
@@ -34,6 +34,9 @@ public class TypingMinigameUI : MonoBehaviour
     // Completion callback
     private System.Action onMinigameCompleted;
 
+    // Canvas reference for layering
+    private Canvas minigameCanvas;
+
     private void Awake()
     {
         // Singleton pattern
@@ -44,6 +47,18 @@ public class TypingMinigameUI : MonoBehaviour
         else
         {
             Destroy(gameObject);
+        }
+
+        // Setup Canvas for top-layer rendering
+        minigameCanvas = GetComponent<Canvas>();
+        if (minigameCanvas != null)
+        {
+            minigameCanvas.sortingOrder = 100;
+            minigameCanvas.overrideSorting = true;
+        }
+        else
+        {
+            Debug.LogWarning("TypingMinigameUI: Canvas component not found! Minigame may not render on top.");
         }
 
         // Hide window on start
