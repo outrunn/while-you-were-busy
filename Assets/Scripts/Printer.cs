@@ -28,7 +28,7 @@ public class Printer : MonoBehaviour
     [SerializeField] private AudioSource printSound;
 
     [Header("Board Animation")]
-    [SerializeField] private BulletinBoard bulletinBoard;
+    [SerializeField] private BulletinBoard bulletinBoard; // Auto-discovered if not assigned
     [SerializeField] private float travelDuration = 0.8f;
 
     private float timeSinceLastPrint = 0f;
@@ -47,6 +47,16 @@ public class Printer : MonoBehaviour
 
     private void Start()
     {
+        // Auto-discover bulletin board if not assigned
+        if (bulletinBoard == null)
+        {
+            bulletinBoard = FindObjectOfType<BulletinBoard>();
+            if (bulletinBoard == null)
+            {
+                Debug.LogWarning("Printer: BulletinBoard not found in scene. Ticket animation will not work.");
+            }
+        }
+
         if (printButton != null)
         {
             printButton.onClick.AddListener(PrintTicket);
