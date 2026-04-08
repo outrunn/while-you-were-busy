@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 /// Drop zone for the shredder - allows discarding unwanted tickets.
 /// Acts as an alternative to the bulletin board for failed or unwanted tickets.
 /// </summary>
-public class ShredderUI : MonoBehaviour, IDropHandler
+public class ShredderUI : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Shredder Settings")]
     [SerializeField] private bool allowDrops = true;
@@ -20,6 +20,8 @@ public class ShredderUI : MonoBehaviour, IDropHandler
 
     private void Start()
     {
+        Debug.Log("ShredderUI.Start() called");
+
         shredderImage = GetComponent<Image>();
 
         if (canvasGroup == null)
@@ -31,6 +33,7 @@ public class ShredderUI : MonoBehaviour, IDropHandler
         if (shredderImage != null)
         {
             shredderImage.raycastTarget = true;
+            Debug.Log("ShredderUI: Image found with raycastTarget=true");
         }
         else
         {
@@ -46,6 +49,13 @@ public class ShredderUI : MonoBehaviour, IDropHandler
             Debug.LogWarning("ShredderUI: No GraphicRaycaster found! Adding one...");
             gameObject.AddComponent<GraphicRaycaster>();
         }
+        else
+        {
+            Debug.Log("ShredderUI: GraphicRaycaster found");
+        }
+
+        // Verify this GameObject can receive drops
+        Debug.Log($"ShredderUI setup complete. GameObject: {gameObject.name}, raycastTarget: {(shredderImage != null ? shredderImage.raycastTarget : false)}");
 
         // Add event trigger for hover effects
         EventTrigger trigger = gameObject.AddComponent<EventTrigger>();
@@ -152,16 +162,31 @@ public class ShredderUI : MonoBehaviour, IDropHandler
         Debug.Log("Shredding ticket...");
     }
 
-    private void OnPointerEnter(PointerEventData eventData)
+    public void OnPointerEnter(PointerEventData eventData)
     {
+        Debug.Log($"ShredderUI.OnPointerEnter: {eventData.pointerDrag?.name ?? "no drag"}");
+
+        // BACKUP: If dragging a ticket, try to drop it manually
+        if (eventData.pointerDrag != null)
+        {
+            Ticket ticket = eventData.pointerDrag.GetComponent<Ticket>();
+            if (ticket != null && ticket.IsStamped())
+            {
+                Debug.Log("BACKUP: Detected stamped ticket on pointer enter - attempting shred");
+                ShredTicket(ticket);
+                return;
+            }
+        }
+
         if (canvasGroup != null)
         {
             canvasGroup.alpha = activeAlpha;
         }
     }
 
-    private void OnPointerExit(PointerEventData eventData)
+    public void OnPointerExit(PointerEventData eventData)
     {
+        Debug.Log("ShredderUI.OnPointerExit");
         if (canvasGroup != null)
         {
             canvasGroup.alpha = inactiveAlpha;
