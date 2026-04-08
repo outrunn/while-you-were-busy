@@ -32,6 +32,20 @@ public class ShredderUI : MonoBehaviour, IDropHandler
         {
             shredderImage.raycastTarget = true;
         }
+        else
+        {
+            Debug.LogWarning("ShredderUI: No Image component found! Adding one...");
+            shredderImage = gameObject.AddComponent<Image>();
+            shredderImage.raycastTarget = true;
+        }
+
+        // Ensure GraphicRaycaster exists for drop detection
+        GraphicRaycaster raycaster = GetComponent<GraphicRaycaster>();
+        if (raycaster == null)
+        {
+            Debug.LogWarning("ShredderUI: No GraphicRaycaster found! Adding one...");
+            gameObject.AddComponent<GraphicRaycaster>();
+        }
 
         // Add event trigger for hover effects
         EventTrigger trigger = gameObject.AddComponent<EventTrigger>();
