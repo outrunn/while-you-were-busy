@@ -90,6 +90,7 @@ public class ShredderUI : MonoBehaviour, IDropHandler
         if (gameManager != null)
         {
             gameManager.AddOutputs(reward);
+            gameManager.CompleteTask();
             SystemLog.Instance?.LogMessage($"Shredded '{taskTitle}' - Awarded {reward} quota!");
         }
         else

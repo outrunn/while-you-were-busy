@@ -39,7 +39,7 @@ public class ProcessingMachine : MonoBehaviour, IDropHandler
         // Auto-find Printer if not assigned — prevents activeTicketCount from getting stuck
         if (printer == null)
         {
-            printer = FindObjectOfType<Printer>();
+            printer = FindFirstObjectByType<Printer>();
             if (printer == null)
             {
                 Debug.LogWarning("ProcessingMachine: No Printer found in scene. Processed tickets won't decrement the active ticket count.");
@@ -203,18 +203,17 @@ public class ProcessingMachine : MonoBehaviour, IDropHandler
         {
             float reward = ticket.GetReward();
 
-            // Add bonus based on difficulty
-            float difficultyMultiplier = 1f + (ticket.GetDifficulty() - 1) * 0.5f;
-            float finalReward = reward * difficultyMultiplier;
+            // Grant the reward (no difficulty scaling - fixed rewards)
+            GameManager.Instance.AddOutputs(reward);
 
-            // Grant the reward
-            GameManager.Instance.AddOutputs(finalReward);
+            // Increment task completion count for daily quota
+            GameManager.Instance.CompleteTask();
 
-            // Degrade world health based on task difficulty
-            float healthCost = ticket.GetDifficulty() * 0.5f;
+            // Degrade world health (fixed cost per task)
+            const float healthCost = 2f;
             GameManager.Instance.DegradeWorldHealth(healthCost);
 
-            SystemLog.Instance?.LogMessage($"Task complete! +{finalReward:F0} outputs");
+            SystemLog.Instance?.LogMessage($"Task complete! +{reward:F0} outputs");
         }
     }
 
