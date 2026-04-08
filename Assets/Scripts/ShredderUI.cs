@@ -101,7 +101,7 @@ public class ShredderUI : MonoBehaviour, IDropHandler
         PlayShredAnimation();
 
         // Notify printer that ticket is being processed
-        Printer printer = FindObjectOfType<Printer>();
+        Printer printer = FindFirstObjectByType<Printer>();
         if (printer != null)
         {
             printer.OnTicketProcessed();

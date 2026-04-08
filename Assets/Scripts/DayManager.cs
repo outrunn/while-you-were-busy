@@ -56,7 +56,7 @@ public class DayManager : MonoBehaviour
         }
     }
 
-    private void ShowUpgradeModal(int day)
+    public void ShowUpgradeModal(int day)
     {
         if (isShowingModal) return;
 
@@ -65,7 +65,7 @@ public class DayManager : MonoBehaviour
         // Create or show modal
         if (upgradeModalInstance == null)
         {
-            upgradeModalInstance = Instantiate(upgradeModalPrefab, Canvas.FindObjectOfType<Canvas>()?.transform ?? transform);
+            upgradeModalInstance = Instantiate(upgradeModalPrefab, Canvas.FindFirstObjectByType<Canvas>()?.transform ?? transform);
         }
 
         upgradeModalInstance.SetActive(true);
@@ -76,6 +76,17 @@ public class DayManager : MonoBehaviour
         {
             modalUI.SetupForDay(day, AdvanceToNextDay);
         }
+    }
+
+    /// <summary>
+    /// Show day failure screen (quota not met)
+    /// </summary>
+    public void ShowDayFailure(int day)
+    {
+        SystemLog.Instance?.LogMessage($"Day {day} failed - quota not met!");
+        // Could show a retry modal here
+        // For now, just advance to next day after a delay
+        Invoke(nameof(AdvanceToNextDay), 2f);
     }
 
     public void AdvanceToNextDay()
@@ -103,7 +114,7 @@ public class DayManager : MonoBehaviour
 
         if (endingPanelInstance == null)
         {
-            endingPanelInstance = Instantiate(endingPanelPrefab, Canvas.FindObjectOfType<Canvas>()?.transform ?? transform);
+            endingPanelInstance = Instantiate(endingPanelPrefab, Canvas.FindFirstObjectByType<Canvas>()?.transform ?? transform);
         }
 
         endingPanelInstance.SetActive(true);

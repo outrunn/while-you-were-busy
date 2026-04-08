@@ -13,24 +13,21 @@ public class GameManager : MonoBehaviour
     [Header("Game State")]
     [SerializeField] private float outputs = 0f;
     [SerializeField] private float outputsPerClick = 1f;
-    [SerializeField] private float outputsPerSecond = 0f;
     [SerializeField] private float worldHealth = 100f;
 
     [Header("Day/Quota System")]
     [SerializeField] private int currentDay = 1;
-    [SerializeField] private float dailyQuota = 100f;
-    [SerializeField] private float dailyPoints = 0f;
-    [SerializeField] private float baseQuota = 100f;
-    [SerializeField] private float quotaMultiplier = 1.5f;
+    [SerializeField] private int tasksCompleted = 0; // Number of minigames completed
+    [SerializeField] private int tasksRequired = 4; // Must complete 4 minigames to advance
+    [SerializeField] private float dayDuration = 90f; // 1 minute 30 seconds = 90 seconds
 
-    [Header("World Time")]
-    [SerializeField] private float currentTime = 6f; // Hours (6.0 = 6:00 AM)
-    [SerializeField] private float timeProgressionSpeed = 60f; // Real seconds per in-game hour
-    [SerializeField] private float startTime = 6f; // Day starts at 6:00 AM
+    [Header("Day Timer")]
+    [SerializeField] private float dayTimer = 0f; // Counts up from 0 to dayDuration
+    [SerializeField] private float startTime = 8f; // Display time starts at 8:00 AM
+    [SerializeField] private float endTime = 20f; // Display time ends at 8:00 PM (20:00)
 
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI outputsText;
-    [SerializeField] private TextMeshProUGUI outputsPerSecondText;
     [SerializeField] private TextMeshProUGUI quotaText;
     [SerializeField] private TextMeshProUGUI dayText;
     [SerializeField] private TextMeshProUGUI timeText;
@@ -39,17 +36,10 @@ public class GameManager : MonoBehaviour
 
     [Header("World Degradation Settings")]
     [SerializeField] private float worldHealthDecayPerClick = 0.1f;
-    [SerializeField] private float worldHealthDecayPerOutput = 0.005f;
-
-    [Header("Upgrade Costs")]
-    [SerializeField] private float autoProcessorCost = 10f;
-    [SerializeField] private float scalingEngineCost = 50f;
-    [SerializeField] private float expansionProtocolCost = 200f;
+    [SerializeField] private float worldHealthDecayPerOutput = 0.005f; // TODO: implement world health decay
 
     [Header("Upgrade Values")]
-    [SerializeField] private float autoProcessorBonus = 1f;
     [SerializeField] private float scalingEngineMultiplier = 2f;
-    [SerializeField] private float expansionProtocolBonus = 10f;
 
     private void Awake()
     {
@@ -87,44 +77,98 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        // Passive output generation
-        if (outputsPerSecond > 0)
-        {
-            float generatedThisFrame = outputsPerSecond * Time.deltaTime;
-            outputs += generatedThisFrame;
-
-            // World health degrades based on production rate
-            worldHealth -= generatedThisFrame * worldHealthDecayPerOutput;
-        }
-
         // Clamp world health
         worldHealth = Mathf.Max(0, worldHealth);
 
-        // Progress world time
-        if (timeProgressionSpeed > 0)
-        {
-            currentTime += (Time.deltaTime / timeProgressionSpeed); // Convert real time to in-game hours
+        // Progress day timer
+        dayTimer += Time.deltaTime;
 
-            // Wrap time at 24 hours (optional - or let it run beyond)
-            if (currentTime >= 24f)
-            {
-                currentTime = currentTime % 24f;
-            }
+        // Check if day is over (90 seconds elapsed)
+        if (dayTimer >= dayDuration)
+        {
+            EndDay();
         }
 
-        // Check for Day 5 ending condition
-        if (currentDay == 5 && currentTime >= 18f && dailyPoints < dailyQuota)
+        UpdateUI();
+    }
+
+    /// <summary>
+    /// Called when day timer reaches 90 seconds
+    /// </summary>
+    private void EndDay()
+    {
+        dayTimer = dayDuration; // Clamp timer
+
+        // Check win/lose condition
+        if (tasksCompleted >= tasksRequired)
         {
+            // WIN - advance to next day
+            SystemLog.Instance?.LogMessage($"Day {currentDay} complete! Quota met with {tasksCompleted} tasks.");
+            AdvanceToNextDay();
+        }
+        else
+        {
+            // LOSE - show ending or retry
+            SystemLog.Instance?.LogMessage($"Day {currentDay} failed! Only completed {tasksCompleted}/{tasksRequired} tasks.");
+
+            if (currentDay == 5)
+            {
+                // Day 5 loss = game over
+                if (DayManager.Instance != null)
+                {
+                    DayManager.Instance.TriggerEnding();
+                }
+            }
+            else
+            {
+                // Earlier days: retry or show day manager
+                if (DayManager.Instance != null)
+                {
+                    DayManager.Instance.ShowDayFailure(currentDay);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Advance to the next day
+    /// </summary>
+    public void AdvanceToNextDay()
+    {
+        if (currentDay < 5)
+        {
+            currentDay++;
+            StartNewDay();
+
+            if (DayManager.Instance != null)
+            {
+                DayManager.Instance.ShowUpgradeModal(currentDay - 1); // Show upgrades for previous day
+            }
+        }
+        else
+        {
+            // Day 5 complete = game won
+            SystemLog.Instance?.LogMessage("All 5 days complete! Game won!");
             if (DayManager.Instance != null)
             {
                 DayManager.Instance.TriggerEnding();
             }
         }
+    }
 
-        // Check quota completion
-        UpdateSleepButton();
-
-        UpdateUI();
+    /// <summary>
+    /// Called when player sleeps (end of day)
+    /// </summary>
+    public void OnSleep()
+    {
+        if (tasksCompleted >= tasksRequired)
+        {
+            EndDay();
+        }
+        else
+        {
+            SystemLog.Instance?.LogMessage("Cannot sleep yet - quota not met!");
+        }
     }
 
     /// <summary>
@@ -138,51 +182,52 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Attempt to purchase Auto Processor upgrade
-    /// Adds passive outputs per second
+    /// Add outputs (quota points) - used by minigames and shredder
     /// </summary>
-    public bool PurchaseAutoProcessor()
+    public void AddOutputs(float amount)
     {
-        if (outputs >= autoProcessorCost)
-        {
-            outputs -= autoProcessorCost;
-            outputsPerSecond += autoProcessorBonus;
-            autoProcessorCost *= 1.5f; // Increase cost for next purchase
-            return true;
-        }
-        return false;
+        outputs += amount;
+        SystemLog.Instance?.LogMessage($"Added {amount} quota points!");
     }
 
     /// <summary>
-    /// Attempt to purchase Scaling Engine upgrade
-    /// Multiplies outputs per click
+    /// Get current daily quota (tasks completed)
     /// </summary>
-    public bool PurchaseScalingEngine()
+    public int GetDailyQuota()
     {
-        if (outputs >= scalingEngineCost)
-        {
-            outputs -= scalingEngineCost;
-            outputsPerClick *= scalingEngineMultiplier;
-            scalingEngineCost *= 2f; // Increase cost for next purchase
-            return true;
-        }
-        return false;
+        return tasksRequired;
     }
 
     /// <summary>
-    /// Attempt to purchase Expansion Protocol upgrade
-    /// Significantly increases passive generation
+    /// Get current daily points (tasks completed)
     /// </summary>
-    public bool PurchaseExpansionProtocol()
+    public int GetDailyPoints()
     {
-        if (outputs >= expansionProtocolCost)
-        {
-            outputs -= expansionProtocolCost;
-            outputsPerSecond += expansionProtocolBonus;
-            expansionProtocolCost *= 2.5f; // Increase cost for next purchase
-            return true;
-        }
-        return false;
+        return tasksCompleted;
+    }
+
+    /// <summary>
+    /// Get current outputs/quota
+    /// </summary>
+    public float GetOutputs()
+    {
+        return outputs;
+    }
+
+    /// <summary>
+    /// Get current day
+    /// </summary>
+    public int GetCurrentDay()
+    {
+        return currentDay;
+    }
+
+    /// <summary>
+    /// Multiply outputs per click
+    /// </summary>
+    public void UpgradeClickPower()
+    {
+        outputsPerClick *= scalingEngineMultiplier;
     }
 
     /// <summary>
@@ -190,39 +235,44 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void UpdateUI()
     {
-        if (outputsText != null)
-        {
-            outputsText.text = $"Outputs: {outputs:F0}";
-        }
-
-        if (outputsPerSecondText != null)
-        {
-            outputsPerSecondText.text = $"Per Second: {outputsPerSecond:F1}";
-        }
-
-        if (quotaText != null)
-        {
-            quotaText.text = $"Quota: {dailyPoints:F0}/{dailyQuota:F0}";
-        }
-
         if (dayText != null)
         {
             dayText.text = $"Day {currentDay}";
         }
 
+        if (quotaText != null)
+        {
+            quotaText.text = $"Tasks: {tasksCompleted}/{tasksRequired}";
+        }
+
         if (timeText != null)
         {
-            timeText.text = $"Time: {FormatTime(currentTime)}";
+            // Calculate current display time (8am to 8pm, mapped to 0-90 seconds)
+            float timeProgress = dayTimer / dayDuration; // 0 to 1
+            float displayTime = startTime + (endTime - startTime) * timeProgress; // 8 to 20 (8am to 8pm)
+            timeText.text = $"Time: {FormatTime(displayTime)}";
+        }
+
+        if (outputsText != null)
+        {
+            float remainingTime = dayDuration - dayTimer;
+            outputsText.text = $"Time left: {remainingTime:F1}s";
         }
     }
 
     /// <summary>
-    /// Add outputs to the player's total (used by ticket system)
+    /// Record a completed minigame task
     /// </summary>
-    public void AddOutputs(float amount)
+    public void CompleteTask()
     {
-        outputs += amount;
-        dailyPoints += amount; // Track daily progress toward quota
+        tasksCompleted++;
+        SystemLog.Instance?.LogMessage($"Task completed! {tasksCompleted}/{tasksRequired}");
+
+        // Check if quota met
+        if (tasksCompleted >= tasksRequired)
+        {
+            SystemLog.Instance?.LogMessage("Day quota met! You can sleep now.");
+        }
     }
 
     /// <summary>
@@ -235,65 +285,16 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Start a new day - called at game start and after sleeping
+    /// Start a new day - reset timer and task count
     /// </summary>
     private void StartNewDay()
     {
-        currentTime = startTime; // Reset to 6:00 AM
-        dailyPoints = 0f;
+        dayTimer = 0f;
+        tasksCompleted = 0;
 
-        // Day 5: set impossible quota
-        if (currentDay == 5)
-        {
-            dailyQuota = 999999f;
-        }
-        else
-        {
-            dailyQuota = baseQuota * Mathf.Pow(quotaMultiplier, currentDay - 1);
-        }
-
-        SystemLog.Instance?.LogMessage($"Day {currentDay} begins. Quota: {dailyQuota:F0} points");
+        SystemLog.Instance?.LogMessage($"Day {currentDay} begins. Complete {tasksRequired} minigames in {dayDuration} seconds!");
     }
 
-    /// <summary>
-    /// Called when player clicks sleep button
-    /// </summary>
-    public void OnSleep()
-    {
-        if (dailyPoints < dailyQuota)
-        {
-            SystemLog.Instance?.LogMessage("Quota not met! Keep working.");
-            return;
-        }
-
-        // Show upgrade modal and let DayManager handle advancement
-        if (DayManager.Instance != null)
-        {
-            DayManager.Instance.OnSleepClicked();
-        }
-    }
-
-    /// <summary>
-    /// Advance to next day (called by DayManager after upgrade choice)
-    /// </summary>
-    public void AdvanceToNextDay()
-    {
-        currentDay++;
-        StartNewDay();
-        UpdateUI();
-    }
-
-    /// <summary>
-    /// Update sleep button enabled state based on quota
-    /// </summary>
-    private void UpdateSleepButton()
-    {
-        if (sleepButton != null)
-        {
-            bool quotaMet = dailyPoints >= dailyQuota;
-            sleepButton.interactable = quotaMet;
-        }
-    }
 
     /// <summary>
     /// Format time as HH:MM AM/PM
@@ -313,10 +314,9 @@ public class GameManager : MonoBehaviour
     // Public getters for other systems
     public float GetWorldHealth() => worldHealth;
     public float GetOutputs() => outputs;
-    public float GetAutoProcessorCost() => autoProcessorCost;
-    public float GetScalingEngineCost() => scalingEngineCost;
-    public float GetExpansionProtocolCost() => expansionProtocolCost;
     public int GetCurrentDay() => currentDay;
-    public float GetDailyQuota() => dailyQuota;
-    public float GetDailyPoints() => dailyPoints;
+    public int GetTasksCompleted() => tasksCompleted;
+    public int GetTasksRequired() => tasksRequired;
+    public float GetDayTimer() => dayTimer;
+    public float GetDayDuration() => dayDuration;
 }

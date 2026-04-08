@@ -10,9 +10,9 @@ using TMPro;
 public class Printer : MonoBehaviour
 {
     [Header("Printer Settings")]
-    [SerializeField] private float autoPrintInterval = 30f; // Print every 30 seconds
+    [SerializeField] private float autoPrintInterval = 15f; // Print every 15 seconds
     [SerializeField] private bool autoPrintEnabled = true;
-    [SerializeField] private int maxActiveTickets = 5; // Limit active tickets
+    [SerializeField] private int maxActiveTickets = 10; // Limit active tickets
 
     [Header("Ticket Prefab")]
     [SerializeField] private GameObject ticketPrefab;
@@ -50,7 +50,7 @@ public class Printer : MonoBehaviour
         // Auto-discover bulletin board if not assigned
         if (bulletinBoard == null)
         {
-            bulletinBoard = FindObjectOfType<BulletinBoard>();
+            bulletinBoard = FindFirstObjectByType<BulletinBoard>();
             if (bulletinBoard == null)
             {
                 Debug.LogWarning("Printer: BulletinBoard not found in scene. Ticket animation will not work.");
