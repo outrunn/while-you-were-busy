@@ -52,16 +52,20 @@ public class ShredderUI : MonoBehaviour, IDropHandler
     /// </summary>
     public void OnDrop(PointerEventData eventData)
     {
+        Debug.Log("ShredderUI.OnDrop called!");
+
         if (!allowDrops) return;
 
         GameObject droppedObject = eventData.pointerDrag;
 
         if (droppedObject != null)
         {
+            Debug.Log($"Dropped object: {droppedObject.name}");
             Ticket ticket = droppedObject.GetComponent<Ticket>();
 
             if (ticket != null)
             {
+                Debug.Log($"Ticket found: {ticket.GetTaskTitle()}, IsStamped: {ticket.IsStamped()}");
                 // Only shred completed (stamped) tickets
                 if (ticket.IsStamped())
                 {
@@ -74,6 +78,14 @@ public class ShredderUI : MonoBehaviour, IDropHandler
                     SystemLog.Instance?.LogMessage("Can only shred completed tickets!");
                 }
             }
+            else
+            {
+                Debug.Log($"No Ticket component found on {droppedObject.name}");
+            }
+        }
+        else
+        {
+            Debug.Log("No object was dragged to shredder");
         }
     }
 
