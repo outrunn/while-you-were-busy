@@ -41,7 +41,6 @@ public class Printer : MonoBehaviour
 
     private void Awake()
     {
-        Debug.Log("Printer.Awake called");
         // Hide the printer panel on start so the scene view stays clean.
         // The root GameObject stays active so Update/auto-print still runs.
         // Assign 'printerPanel' in the Inspector to a child Panel wrapping all printer UI.
@@ -53,25 +52,11 @@ public class Printer : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log("Printer.Start called");
-
-        // Auto-discover ticket prefab if not assigned
+        // Ticket prefab is assigned by SetupAllAssets via reflection
         if (ticketPrefab == null)
         {
-            Debug.Log("Printer: ticketPrefab not assigned, attempting to auto-discover...");
-            #if UNITY_EDITOR
-            ticketPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/TicketPrefab.prefab");
-            #else
-            // In runtime builds, use Resources folder or assume it's already assigned
-            ticketPrefab = Resources.Load<GameObject>("TicketPrefab");
-            #endif
-
-            if (ticketPrefab == null)
-            {
-                Debug.LogError("Printer: TicketPrefab not found! Tickets cannot be printed.");
-                return;
-            }
-            Debug.Log("Printer: TicketPrefab auto-discovered successfully");
+            Debug.LogError("Printer: TicketPrefab not assigned! Assign it in SetupAllAssets.");
+            return;
         }
 
         // Auto-discover bulletin board if not assigned
@@ -149,13 +134,10 @@ public class Printer : MonoBehaviour
     /// </summary>
     public void PrintTicket()
     {
-        Debug.Log("PrintTicket() called");
-
         // Check if we've hit the ticket limit
         if (activeTicketCount >= maxActiveTickets)
         {
             SystemLog.Instance?.LogMessage("Printer: Too many active tickets!");
-            Debug.Log("PrintTicket() aborted: ticket limit reached");
             return;
         }
 
@@ -168,18 +150,8 @@ public class Printer : MonoBehaviour
 
         int currentDay = GameManager.Instance?.GetCurrentDay() ?? 1;
         TaskData task = TaskDatabase.Instance.GetRandomTaskForDay(currentDay);
-        Debug.Log($"Got task: {(task != null ? task.title : "NULL")}");
 
         // Create ticket
-        if (ticketPrefab != null)
-        {
-            Debug.Log("Ticket prefab found, creating ticket...");
-        }
-        else
-        {
-            Debug.LogError("Ticket prefab is NULL!");
-        }
-
         if (ticketPrefab != null)
         {
             // Find the root Canvas so tickets are draggable across the whole screen
