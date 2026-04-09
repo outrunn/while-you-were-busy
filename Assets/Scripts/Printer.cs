@@ -149,6 +149,12 @@ public class Printer : MonoBehaviour
             // Position it randomly within bulletin board bounds
             if (ticketRect != null)
             {
+                // Set explicit size if not already set
+                if (ticketRect.sizeDelta == Vector2.zero)
+                {
+                    ticketRect.sizeDelta = new Vector2(140, 77); // Match the ticket sprite dimensions
+                }
+
                 // Random position within board bounds
                 float randomX = Random.Range(boardCenter.x - boardSize.x / 2f, boardCenter.x + boardSize.x / 2f);
                 float randomY = Random.Range(boardCenter.y - boardSize.y / 2f, boardCenter.y + boardSize.y / 2f);
