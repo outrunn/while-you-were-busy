@@ -28,7 +28,8 @@ public class SetupAllAssets : MonoBehaviour
         if (targetCanvas == null)
             targetCanvas = FindFirstObjectByType<Canvas>();
 
-        if (targetCanvas != null && targetCanvas.transform.childCount == 0)
+        // Only create if Wallpaper doesn't exist (it's created first, so if it exists, all assets exist)
+        if (targetCanvas != null && targetCanvas.transform.Find("Wallpaper") == null)
         {
             CreateAllAssets();
         }
@@ -124,11 +125,27 @@ public class SetupAllAssets : MonoBehaviour
         image.preserveAspect = true;
         image.raycastTarget = true;
 
-        // Attach ShredderUI script if this is the shredder
+        // Attach specific scripts based on asset type
         if (name == "Shredder")
         {
             ShredderUI shredderUI = obj.AddComponent<ShredderUI>();
             obj.AddComponent<GraphicRaycaster>();
+        }
+        else if (name == "BulletinBoard")
+        {
+            BulletinBoard bulletinBoard = obj.AddComponent<BulletinBoard>();
+
+            // Create a container child for pinned tickets
+            GameObject ticketContainer = new GameObject("TicketContainer");
+            ticketContainer.transform.SetParent(obj.transform, false);
+            ticketContainer.AddComponent<RectTransform>();
+
+            // Set the container on the BulletinBoard via reflection since there's no public setter
+            var containerField = typeof(BulletinBoard).GetField("ticketContainer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (containerField != null)
+            {
+                containerField.SetValue(bulletinBoard, ticketContainer.transform);
+            }
         }
 
         Debug.Log($"Created asset: {name}");

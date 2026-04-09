@@ -64,37 +64,15 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
             startTaskButton.gameObject.SetActive(false); // Hidden by default
         }
 
-        // Auto-discover mini/expanded views by searching only within own children
-        // (Global tag search would find the same object for all ticket instances, breaking expand/collapse)
+        // Find ExpandedView and make it always active (scale handles mini/expanded visual)
+        // No MiniView needed — using scale-only approach for mini/expanded states
         foreach (Transform child in transform)
         {
-            if (child.name == "MiniView")
-            {
-                miniView = child.gameObject;
-            }
             if (child.name == "ExpandedView")
             {
                 expandedView = child.gameObject;
+                expandedView.SetActive(true); // Always visible — scale controls mini vs expanded look
             }
-        }
-
-        // Setup mini/expanded views
-        if (miniView != null)
-        {
-            miniView.SetActive(true);
-        }
-        else
-        {
-            Debug.LogWarning($"MiniView not found on ticket {gameObject.name}. Make sure it's tagged as 'MiniView'.");
-        }
-
-        if (expandedView != null)
-        {
-            expandedView.SetActive(false);
-        }
-        else
-        {
-            Debug.LogWarning($"ExpandedView not found on ticket {gameObject.name}. Make sure it's tagged as 'ExpandedView'.");
         }
     }
 
@@ -268,13 +246,11 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
                 {
                     StopCoroutine(expandCoroutine);
                 }
+                // Move to root canvas so expanded stamped ticket renders above all UI
+                transform.SetParent(canvas.transform);
+                transform.SetAsLastSibling();
                 rectTransform.localScale = Vector3.one;
-                transform.SetAsLastSibling(); // Put on top
             }
-
-            // Show the expanded view with all text/buttons (in case it was collapsed before stamping)
-            expandedView?.SetActive(true);
-            miniView?.SetActive(false);
 
             // Show approval stamp animation over this ticket
             TicketCompletionStamp stampAnimator = FindFirstObjectByType<TicketCompletionStamp>();
@@ -325,6 +301,9 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         Debug.Log($"Ticket.OnBeginDrag: {taskTitle}");
         originalPosition = rectTransform.anchoredPosition;
         originalParent = transform.parent;
+        // Re-parent to root canvas for proper z-ordering during drag (renders above all UI)
+        transform.SetParent(canvas.transform);
+        transform.SetAsLastSibling();
         canvasGroup.alpha = 0.6f;
         canvasGroup.blocksRaycasts = false;
     }
@@ -372,6 +351,13 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         }
 
         Debug.Log("No shredder found at drop location");
+
+        // No drop target found — keep ticket at new position but restore parent
+        // (don't reset position - let the player place tickets where they dragged them)
+        if (originalParent != null)
+        {
+            transform.SetParent(originalParent);
+        }
     }
 
     /// <summary>
@@ -396,11 +382,9 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
             StopCoroutine(expandCoroutine);
         }
 
-        // Move to last sibling in hierarchy when expanding (renders on top)
+        // Save current parent before expanding (so we can return on collapse)
         if (!isExpanded)
-        {
-            transform.SetAsLastSibling();
-        }
+            originalParent = transform.parent;
 
         expandCoroutine = StartCoroutine(ExpandCoroutine(!isExpanded));
     }
@@ -410,6 +394,13 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
     /// </summary>
     private IEnumerator ExpandCoroutine(bool shouldExpand)
     {
+        // Re-parent to root canvas when expanding so ticket renders above all other UI
+        if (shouldExpand && canvas != null)
+        {
+            transform.SetParent(canvas.transform);
+            transform.SetAsLastSibling();
+        }
+
         Vector3 startScale = rectTransform.localScale;
         Vector3 endScale = shouldExpand ? Vector3.one : new Vector3(0.3f, 0.3f, 1f);
 
@@ -428,15 +419,12 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         rectTransform.localScale = endScale;
         isExpanded = shouldExpand;
 
-        // Swap views
-        if (miniView != null)
+        // Keep ticket at root canvas regardless of expand/collapse state
+        // (so it always stays visible above background elements like the BulletinBoard)
+        if (canvas != null && transform.parent != canvas.transform)
         {
-            miniView.SetActive(!shouldExpand);
-        }
-
-        if (expandedView != null)
-        {
-            expandedView.SetActive(shouldExpand);
+            transform.SetParent(canvas.transform);
+            transform.SetAsLastSibling();
         }
 
         expandCoroutine = null;

@@ -31,6 +31,10 @@ public class Printer : MonoBehaviour
     [SerializeField] private BulletinBoard bulletinBoard; // Auto-discovered if not assigned
     [SerializeField] private float travelDuration = 0.8f;
 
+    [Header("Bulletin Board Spawn Bounds")]
+    [SerializeField] private Vector2 boardCenter = new Vector2(-418f, 180f);
+    [SerializeField] private Vector2 boardSize = new Vector2(785f, 398f);
+
     private float timeSinceLastPrint = 0f;
     private int activeTicketCount = 0;
 
@@ -133,35 +137,23 @@ public class Printer : MonoBehaviour
         TaskData task = TaskDatabase.Instance.GetRandomTaskForDay(currentDay);
 
         // Create ticket
-        if (ticketPrefab != null && ticketSpawnPoint != null)
+        if (ticketPrefab != null)
         {
             // Find the root Canvas so tickets are draggable across the whole screen
             Canvas rootCanvas = GetComponentInParent<Canvas>();
-            Transform spawnParent = rootCanvas != null ? rootCanvas.transform : ticketSpawnPoint.parent;
+            Transform spawnParent = rootCanvas != null ? rootCanvas.transform : transform.parent;
 
             GameObject ticketObj = Instantiate(ticketPrefab, spawnParent);
             RectTransform ticketRect = ticketObj.GetComponent<RectTransform>();
 
-            // Position it at the spawn point
+            // Position it randomly within bulletin board bounds
             if (ticketRect != null)
             {
-                // Use anchoredPosition for Canvas UI
-                RectTransform spawnPointRect = ticketSpawnPoint as RectTransform;
-                if (spawnPointRect != null)
-                {
-                    ticketRect.anchoredPosition = spawnPointRect.anchoredPosition;
-                }
-                else
-                {
-                    // Fallback: convert world position to canvas local position
-                    RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                        rootCanvas != null ? rootCanvas.GetComponent<RectTransform>() : (RectTransform)spawnParent,
-                        RectTransformUtility.WorldToScreenPoint(null, ticketSpawnPoint.position),
-                        rootCanvas != null ? rootCanvas.worldCamera : null,
-                        out Vector2 localPos
-                    );
-                    ticketRect.anchoredPosition = localPos;
-                }
+                // Random position within board bounds
+                float randomX = Random.Range(boardCenter.x - boardSize.x / 2f, boardCenter.x + boardSize.x / 2f);
+                float randomY = Random.Range(boardCenter.y - boardSize.y / 2f, boardCenter.y + boardSize.y / 2f);
+                ticketRect.anchoredPosition = new Vector2(randomX, randomY);
+
                 // Spawn in mini mode (0.3x scale)
                 ticketRect.localScale = new Vector3(0.3f, 0.3f, 1f);
             }
