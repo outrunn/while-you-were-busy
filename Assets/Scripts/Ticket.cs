@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 using System.Collections;
+using System.Collections.Generic;
 
 /// <summary>
 /// Represents a task ticket that can be printed, pinned, stamped, and processed.
@@ -206,6 +207,7 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
                 break;
 
             case MinigameType.MultipleChoice:
+                Debug.Log($"MC task detected: {taskTitle}. Instance={MultipleChoiceMinigameUI.Instance}");
                 if (MultipleChoiceMinigameUI.Instance != null)
                 {
                     MultipleChoiceMinigameUI.Instance.StartMinigame(OnMinigameCompleted);
@@ -255,6 +257,9 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
     {
         Debug.Log($"Minigame completed for task: {taskTitle}");
 
+        // Increment the day's task completion counter
+        GameManager.Instance?.CompleteTask();
+
         // Only stamp the ticket - rewards/health degradation happen in ProcessingMachine
         StampTicket();
 
@@ -270,6 +275,18 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         if (!isStamped)
         {
             isStamped = true;
+
+            // Ensure stamped ticket is expanded (so player can drag it to shredder)
+            if (!isExpanded)
+            {
+                isExpanded = true;
+                if (expandCoroutine != null)
+                {
+                    StopCoroutine(expandCoroutine);
+                }
+                rectTransform.localScale = Vector3.one;
+                transform.SetAsLastSibling(); // Put on top
+            }
 
             // Show approval stamp animation over this ticket
             TicketCompletionStamp stampAnimator = FindFirstObjectByType<TicketCompletionStamp>();
@@ -341,36 +358,32 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        Debug.Log($"===== Ticket.OnEndDrag: {taskTitle}, pointerEnter={eventData.pointerEnter?.name} =====");
+        Debug.Log($"===== Ticket.OnEndDrag: {taskTitle} =====");
         canvasGroup.alpha = 1f;
         canvasGroup.blocksRaycasts = true;
 
-        // Check if dropped on Shredder
-        if (eventData.pointerEnter != null)
+        // Raycast to find what's under the mouse pointer at drop position
+        List<RaycastResult> results = new List<RaycastResult>();
+        GraphicRaycaster raycaster = canvas.GetComponent<GraphicRaycaster>();
+        if (raycaster != null)
         {
-            Debug.Log($"PointerEnter is: {eventData.pointerEnter.name}");
+            raycaster.Raycast(eventData, results);
 
-            ShredderUI shredder = eventData.pointerEnter.GetComponent<ShredderUI>();
-            if (shredder != null)
+            foreach (RaycastResult result in results)
             {
-                Debug.Log($"===== FOUND SHREDDER! Calling OnDrop manually =====");
-                // Create a fake drop event and trigger shredder's OnDrop
-                shredder.OnDrop(eventData);
-                Debug.Log($"===== OnDrop call complete =====");
-                return;
-            }
-            else
-            {
-                Debug.Log($"No ShredderUI component on {eventData.pointerEnter.name}");
+                Debug.Log($"Raycast hit: {result.gameObject.name}");
+                ShredderUI shredder = result.gameObject.GetComponent<ShredderUI>();
+                if (shredder != null)
+                {
+                    Debug.Log($"===== FOUND SHREDDER! Calling OnDrop =====");
+                    shredder.OnDrop(eventData);
+                    Debug.Log($"===== OnDrop call complete =====");
+                    return;
+                }
             }
         }
-        else
-        {
-            Debug.Log("PointerEnter is NULL");
-        }
 
-        // Check if dropped on valid target (bulletin board or processing machine)
-        // This will be handled by drop zones
+        Debug.Log("No shredder found at drop location");
     }
 
     /// <summary>
@@ -378,7 +391,11 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
     /// </summary>
     public void OnPointerClick(PointerEventData eventData)
     {
-        ToggleExpand();
+        // Don't allow toggling stamped tickets - they should stay expanded for dragging to shredder
+        if (!isStamped)
+        {
+            ToggleExpand();
+        }
     }
 
     /// <summary>
