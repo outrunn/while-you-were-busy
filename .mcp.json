@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "unity-mcp": {
+      "type": "git",
+      "url": "https://github.com/CoplayDev/unity-mcp.git",
+      "path": "/MCPForUnity",
+      "ref": "main"
+    }
+  }
+}

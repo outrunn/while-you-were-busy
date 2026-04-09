@@ -1,0 +1,217 @@
+================================================================================
+                         MINIGAME FLOW DIAGRAM
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ TICKET LIFECYCLE                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+1. PRINTER SPAWNS TICKET
+   ↓
+   Printer.PrintTicket()
+   ↓
+   Creates Ticket GameObject from prefab
+   ↓
+   Calls Ticket.Initialize(TaskData)
+   ↓
+   TaskData contains:
+     - title
+     - description
+     - baseReward
+     - difficultyLevel
+     - minigameType (enum: Typing, MultipleChoice, Math, PhotoReveal)
+     - typingTask (only for Typing type)
+
+2. TICKET SHOWS ON BOARD
+   ↓
+   Displays title/description
+   ↓
+   Shows "START TASK" button (if minigameType != None)
+
+3. PLAYER CLICKS "START TASK"
+   ↓
+   Ticket.OnStartTaskButtonClicked()
+   ↓
+   Switch on taskData.minigameType:
+     - TYPING → TypingMinigameUI.Instance.StartMinigame()
+     - MULTIPLE_CHOICE → MultipleChoiceMinigameUI.Instance.StartMinigame()
+     - MATH → MathMinigameUI.Instance.StartMinigame()
+     - PHOTO_REVEAL → PhotoRevealMinigameUI.Instance.StartMinigame()
+
+4. MINIGAME RUNS
+   ↓
+   Each minigame:
+   - Shows window
+   - Listens for input
+   - Validates answer
+   - On correct answer:
+     └─ "Correct!" message
+     └─ Wait 2.5 seconds (completionDelay)
+     └─ Call onMinigameCompleted callback
+     └─ Hide window
+
+   - On wrong answer:
+     └─ "Incorrect!" message
+     └─ Red flash effect
+     └─ Clear input/reset state
+     └─ Allow retry (player can try again immediately)
+
+5. CALLBACK FIRES: Ticket.OnMinigameCompleted()
+   ↓
+   Calls Ticket.StampTicket()
+   ↓
+   Sets isStamped = true
+   ↓
+   Shows stamp animation/icon
+   ↓
+   Hides "START TASK" button
+   ↓
+   Logs "Task completed! Drag to processing machine."
+
+6. PLAYER DRAGS STAMPED TICKET TO PROCESSING MACHINE
+   ↓
+   ProcessingMachine.OnDrop(Ticket)
+   ↓
+   Processes the ticket:
+     - Adds reward to GameManager.outputs
+     - Adds to dailyPoints (counts toward quota)
+     - Degrades world health
+     - Destroys ticket
+     - Tells Printer to decrement activeTicketCount
+
+================================================================================
+                         DAY-TO-MINIGAME MAPPING
+================================================================================
+
+┌────────┬──────────────────────────┬──────────────────────────────────────┐
+│ Day    │ Minigame Type            │ Task Examples                        │
+├────────┼──────────────────────────┼──────────────────────────────────────┤
+│ 1      │ Typing Only              │ "Draft Status Email"                 │
+│        │                          │ "Meeting Confirmation"               │
+│        │                          │ "Daily Log Entry"                    │
+├────────┼──────────────────────────┼──────────────────────────────────────┤
+│ 2      │ Typing + MultipleChoice  │ "Security Protocol Update" (Typing)  │
+│        │ (50/50 random)           │ "Meeting Minutes" (Typing)           │
+│        │                          │ "File Format Question" (MC)          │
+│        │                          │ "Storage Question" (MC)              │
+├────────┼──────────────────────────┼──────────────────────────────────────┤
+│ 3      │ Math Only                │ "Addition Problem"                   │
+│        │ (Add/Sub, difficulty     │ "Subtraction Problem"                │
+│        │  scaled)                 │ "Mixed Math"                         │
+├────────┼──────────────────────────┼──────────────────────────────────────┤
+│ 4      │ PhotoReveal Only         │ "Identify Object"                    │
+│        │ (Hover to uncover)       │ "Mosaic Puzzle"                      │
+│        │                          │ "Blur Challenge"                     │
+├────────┼──────────────────────────┼──────────────────────────────────────┤
+│ 5      │ Typing (fallback)        │ (Impossible quota - for narrative)   │
+│        │                          │ (Player can't win, ending triggers)  │
+└────────┴──────────────────────────┴──────────────────────────────────────┘
+
+================================================================================
+                         MINIGAME INPUT METHODS
+================================================================================
+
+┌──────────────────┬──────────────────┬──────────────────────────────────────┐
+│ Minigame Type    │ Input Method     │ Completion Condition                 │
+├──────────────────┼──────────────────┼──────────────────────────────────────┤
+│ Typing           │ Keyboard mashing │ Number of key presses ≥ message len  │
+│                  │ (any key)        │                                      │
+├──────────────────┼──────────────────┼──────────────────────────────────────┤
+│ MultipleChoice   │ Click buttons    │ Correct button clicked (1 try)       │
+│                  │ (4 choices)      │ Wrong → red flash + retry allowed    │
+├──────────────────┼──────────────────┼──────────────────────────────────────┤
+│ Math             │ Keyboard typing  │ Type answer + press Enter            │
+│                  │ (0-9, Backspace) │ Wrong → red flash + clear + retry    │
+├──────────────────┼──────────────────┼──────────────────────────────────────┤
+│ PhotoReveal      │ Mouse hover      │ 80% of tiles revealed (no clicking!) │
+│                  │ (no clicks)      │ Auto-completes when threshold hit    │
+└──────────────────┴──────────────────┴──────────────────────────────────────┘
+
+================================================================================
+                         TASK GENERATION LOGIC
+================================================================================
+
+When Printer.PrintTicket() is called:
+  ↓
+  Gets current day from GameManager.GetCurrentDay()
+  ↓
+  Gets difficulty from GameManager.GetDifficultyForCurrentProgress()
+  ↓
+  Calls TaskDatabase.GetRandomTaskForDay(day, difficulty)
+  ↓
+  TaskDatabase filters available tasks by day:
+
+    DAY 1:
+      ✓ minigameType == Typing
+      ✗ minigameType == MultipleChoice (not allowed)
+      ✗ minigameType == Math (not allowed)
+      ✗ minigameType == PhotoReveal (not allowed)
+
+    DAY 2:
+      ✓ minigameType == Typing
+      ✓ minigameType == MultipleChoice
+      ✗ minigameType == Math
+      ✗ minigameType == PhotoReveal
+
+    DAY 3:
+      ✗ minigameType == Typing
+      ✗ minigameType == MultipleChoice
+      ✓ minigameType == Math
+      ✗ minigameType == PhotoReveal
+
+    DAY 4:
+      ✗ minigameType == Typing
+      ✗ minigameType == MultipleChoice
+      ✗ minigameType == Math
+      ✓ minigameType == PhotoReveal
+
+    DAY 5:
+      ✓ minigameType == Typing (fallback, rarely used due to impossible quota)
+
+  ↓
+  Returns random task from filtered list
+  ↓
+  Ticket.Initialize(TaskData) stores the task
+  ↓
+  Ticket displays with correct minigame type
+
+================================================================================
+                         UPGRADE INTEGRATION
+================================================================================
+
+Day 1 Upgrades:
+  - Faster Typing: TypingMinigameUI checks IsF asterTypingActive() → reduces chars to type
+  - Auto Stamp: None (architectural, not implemented in minigame UI)
+
+Day 2 Upgrades:
+  - Number Lock: (not minigame-specific)
+  - Batch Process: (not minigame-specific)
+
+Day 3 Upgrades:
+  - Pre-Sorted: (not minigame-specific)
+  - Quick Scan: (not minigame-specific)
+
+Day 4 Upgrades:
+  - Overclock: (not minigame-specific)
+  - Memory Assist: PhotoRevealMinigameUI checks IsMemoryAssistActive()
+                   → pre-reveals 30% of tiles at start
+
+Day 5:
+  - (No upgrades available - only narrative ending)
+
+================================================================================
+                         ERROR HANDLING
+================================================================================
+
+If minigame not found in scene:
+  ↓
+  Ticket.OnStartTaskButtonClicked() logs error:
+    "MultipleChoiceMinigameUI not in scene!"
+  ↓
+  Minigame doesn't start
+  ↓
+  Button still shows as available
+
+Solution: Ensure all 4 minigame panels exist on Canvas before testing
+
+================================================================================
