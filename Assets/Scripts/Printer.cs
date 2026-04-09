@@ -37,9 +37,11 @@ public class Printer : MonoBehaviour
 
     private float timeSinceLastPrint = 0f;
     private int activeTicketCount = 0;
+    private bool hasInitialized = false;
 
     private void Awake()
     {
+        Debug.Log("Printer.Awake called");
         // Hide the printer panel on start so the scene view stays clean.
         // The root GameObject stays active so Update/auto-print still runs.
         // Assign 'printerPanel' in the Inspector to a child Panel wrapping all printer UI.
@@ -51,6 +53,27 @@ public class Printer : MonoBehaviour
 
     private void Start()
     {
+        Debug.Log("Printer.Start called");
+
+        // Auto-discover ticket prefab if not assigned
+        if (ticketPrefab == null)
+        {
+            Debug.Log("Printer: ticketPrefab not assigned, attempting to auto-discover...");
+            #if UNITY_EDITOR
+            ticketPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/TicketPrefab.prefab");
+            #else
+            // In runtime builds, use Resources folder or assume it's already assigned
+            ticketPrefab = Resources.Load<GameObject>("TicketPrefab");
+            #endif
+
+            if (ticketPrefab == null)
+            {
+                Debug.LogError("Printer: TicketPrefab not found! Tickets cannot be printed.");
+                return;
+            }
+            Debug.Log("Printer: TicketPrefab auto-discovered successfully");
+        }
+
         // Auto-discover bulletin board if not assigned
         if (bulletinBoard == null)
         {
@@ -69,7 +92,7 @@ public class Printer : MonoBehaviour
         // Show the printer panel once the game is ready
         Show();
 
-        // Print first ticket immediately on play
+        // Print first ticket immediately on play (assume SetupAllAssets has finished)
         PrintTicket();
         timeSinceLastPrint = 0f;
 
@@ -100,6 +123,13 @@ public class Printer : MonoBehaviour
 
     private void Update()
     {
+        // First frame initialization (workaround for Start() not running on dynamically created components)
+        if (!hasInitialized)
+        {
+            hasInitialized = true;
+            PrintTicket();  // Print first ticket
+        }
+
         if (autoPrintEnabled)
         {
             timeSinceLastPrint += Time.deltaTime;
@@ -119,10 +149,13 @@ public class Printer : MonoBehaviour
     /// </summary>
     public void PrintTicket()
     {
+        Debug.Log("PrintTicket() called");
+
         // Check if we've hit the ticket limit
         if (activeTicketCount >= maxActiveTickets)
         {
             SystemLog.Instance?.LogMessage("Printer: Too many active tickets!");
+            Debug.Log("PrintTicket() aborted: ticket limit reached");
             return;
         }
 
@@ -135,8 +168,18 @@ public class Printer : MonoBehaviour
 
         int currentDay = GameManager.Instance?.GetCurrentDay() ?? 1;
         TaskData task = TaskDatabase.Instance.GetRandomTaskForDay(currentDay);
+        Debug.Log($"Got task: {(task != null ? task.title : "NULL")}");
 
         // Create ticket
+        if (ticketPrefab != null)
+        {
+            Debug.Log("Ticket prefab found, creating ticket...");
+        }
+        else
+        {
+            Debug.LogError("Ticket prefab is NULL!");
+        }
+
         if (ticketPrefab != null)
         {
             // Find the root Canvas so tickets are draggable across the whole screen
@@ -144,6 +187,10 @@ public class Printer : MonoBehaviour
             Transform spawnParent = rootCanvas != null ? rootCanvas.transform : transform.parent;
 
             GameObject ticketObj = Instantiate(ticketPrefab, spawnParent);
+
+            // Ensure ticket renders on top by making it the last child
+            ticketObj.transform.SetAsLastSibling();
+
             RectTransform ticketRect = ticketObj.GetComponent<RectTransform>();
 
             // Position it randomly within bulletin board bounds

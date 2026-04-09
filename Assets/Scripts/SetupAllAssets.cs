@@ -19,6 +19,7 @@ public class SetupAllAssets : MonoBehaviour
     [SerializeField] private Sprite deskSprite;
     [SerializeField] private Sprite laptopSprite;
     [SerializeField] private GameObject typingMinigamePrefab;
+    [SerializeField] private GameObject ticketPrefab;
 
     private Canvas targetCanvas;
 
@@ -26,7 +27,11 @@ public class SetupAllAssets : MonoBehaviour
     {
         // Auto-create assets on scene start if they don't exist
         if (targetCanvas == null)
-            targetCanvas = FindFirstObjectByType<Canvas>();
+        {
+            var canvas = FindFirstObjectByType<Canvas>();
+            // Always use the ROOT canvas (not a nested one like MathMinigameUI)
+            targetCanvas = canvas != null ? canvas.rootCanvas : null;
+        }
 
         // Only create if Wallpaper doesn't exist (it's created first, so if it exists, all assets exist)
         if (targetCanvas != null && targetCanvas.transform.Find("Wallpaper") == null)
@@ -39,11 +44,21 @@ public class SetupAllAssets : MonoBehaviour
     public void CreateAllAssets()
     {
         if (targetCanvas == null)
-            targetCanvas = FindFirstObjectByType<Canvas>();
+        {
+            var canvas = FindFirstObjectByType<Canvas>();
+            targetCanvas = canvas != null ? canvas.rootCanvas : null;
+        }
 
         if (targetCanvas == null)
         {
             Debug.LogError("No Canvas found in scene!");
+            return;
+        }
+
+        // Skip if assets already exist (prevent duplicate creation)
+        if (targetCanvas.transform.Find("Wallpaper") != null)
+        {
+            Debug.Log("Assets already exist. Skipping creation.");
             return;
         }
 
@@ -145,6 +160,33 @@ public class SetupAllAssets : MonoBehaviour
             if (containerField != null)
             {
                 containerField.SetValue(bulletinBoard, ticketContainer.transform);
+            }
+        }
+        else if (name == "Printer")
+        {
+            Printer printer = obj.AddComponent<Printer>();
+
+            // Assign ticket prefab via reflection since there's no public setter
+            if (ticketPrefab != null)
+            {
+                var prefabField = typeof(Printer).GetField("ticketPrefab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (prefabField != null)
+                {
+                    prefabField.SetValue(printer, ticketPrefab);
+                    Debug.Log("Printer: ticketPrefab assigned via reflection");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("SetupAllAssets: ticketPrefab not assigned in Inspector!");
+            }
+
+            // Initialize the Printer's fields that normally get initialized in Start/Awake
+            // This is a workaround for Start() not running on dynamically created components
+            var autoPrintEnabledField = typeof(Printer).GetField("autoPrintEnabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (autoPrintEnabledField != null)
+            {
+                autoPrintEnabledField.SetValue(printer, true);
             }
         }
 

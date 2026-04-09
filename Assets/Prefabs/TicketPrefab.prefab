@@ -522,6 +522,7 @@ GameObject:
   - component: {fileID: 8583934450879689964}
   - component: {fileID: 1645865104672957970}
   - component: {fileID: 5043043707388472655}
+  - component: {fileID: 2252823529980449275}
   m_Layer: 5
   m_Name: TicketPrefab
   m_TagString: Untagged
@@ -627,6 +628,35 @@ MonoBehaviour:
   stampImage: {fileID: 389268158177553011}
   canvasGroup: {fileID: 1645865104672957970}
   startTaskButton: {fileID: 1594049683428947851}
+  expandDuration: 0.3
+--- !u!114 &2252823529980449275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7952480723833679002}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ead2297cf85047f2bf81426fb1cf718, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  taskTitle: 
+  taskDescription: 
+  rewardAmount: 10
+  taskData:
+    title: 
+    description: 
+    baseReward: 0
+    minigameType: 0
+    typingTask: {fileID: 0}
+  isStamped: 0
+  isPinned: 0
+  titleText: {fileID: 0}
+  descriptionText: {fileID: 0}
+  stampImage: {fileID: 0}
+  canvasGroup: {fileID: 0}
+  startTaskButton: {fileID: 0}
   expandDuration: 0.3
 --- !u!1 &8187487620936264203
 GameObject:
