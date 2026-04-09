@@ -251,7 +251,18 @@ public class Printer : MonoBehaviour
         Vector2 targetPosition = startPosition;
         if (bulletinBoard != null)
         {
-            targetPosition = bulletinBoard.GetNextSlotAnchoredPosition();
+            // GetNextSlotAnchoredPosition returns local position relative to BulletinBoard
+            // We need to convert it to Canvas space by adding the BulletinBoard's position
+            Vector2 boardSlotLocalPosition = bulletinBoard.GetNextSlotAnchoredPosition();
+            RectTransform boardRectTransform = bulletinBoard.GetComponent<RectTransform>();
+            if (boardRectTransform != null)
+            {
+                targetPosition = boardRectTransform.anchoredPosition + boardSlotLocalPosition;
+            }
+            else
+            {
+                targetPosition = boardSlotLocalPosition;
+            }
         }
 
         float elapsed = 0f;
