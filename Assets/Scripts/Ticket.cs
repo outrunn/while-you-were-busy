@@ -64,33 +64,17 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
             startTaskButton.gameObject.SetActive(false); // Hidden by default
         }
 
-        // Auto-discover mini/expanded views using tags
-        // First try by tag, then fall back to name search
-        miniView = GameObject.FindGameObjectWithTag("MiniView");
-        if (miniView == null)
+        // Auto-discover mini/expanded views by searching only within own children
+        // (Global tag search would find the same object for all ticket instances, breaking expand/collapse)
+        foreach (Transform child in transform)
         {
-            // Fallback: search by name in children
-            foreach (Transform child in transform)
+            if (child.name == "MiniView")
             {
-                if (child.name == "MiniView")
-                {
-                    miniView = child.gameObject;
-                    break;
-                }
+                miniView = child.gameObject;
             }
-        }
-
-        expandedView = GameObject.FindGameObjectWithTag("ExpandedView");
-        if (expandedView == null)
-        {
-            // Fallback: search by name in children
-            foreach (Transform child in transform)
+            if (child.name == "ExpandedView")
             {
-                if (child.name == "ExpandedView")
-                {
-                    expandedView = child.gameObject;
-                    break;
-                }
+                expandedView = child.gameObject;
             }
         }
 
@@ -287,6 +271,10 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
                 rectTransform.localScale = Vector3.one;
                 transform.SetAsLastSibling(); // Put on top
             }
+
+            // Show the expanded view with all text/buttons (in case it was collapsed before stamping)
+            expandedView?.SetActive(true);
+            miniView?.SetActive(false);
 
             // Show approval stamp animation over this ticket
             TicketCompletionStamp stampAnimator = FindFirstObjectByType<TicketCompletionStamp>();
