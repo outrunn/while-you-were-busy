@@ -229,18 +229,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 076f8b925c77849db8b1ad5cb0447934, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  autoPrintInterval: 15
-  autoPrintEnabled: 1
-  maxActiveTickets: 10
-  ticketPrefab: {fileID: 0}
-  ticketSpawnPoint: {fileID: 1234567891}
-  printerPanel: {fileID: 0}
-  printButton: {fileID: 0}
-  statusText: {fileID: 0}
-  printerAnimation: {fileID: 0}
-  printSound: {fileID: 1234567897}
-  bulletinBoard: {fileID: 0}
-  travelDuration: 0.8
 --- !u!114 &1234567895
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -456,28 +444,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ad6a31fff2fe4077ac870c75c154e28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletinBoardSprite: {fileID: 0}
-  flowerSprite: {fileID: 0}
-  printerSprite: {fileID: 0}
-  shredderSprite: {fileID: 0}
-  ticketSprite: {fileID: 0}
-  approvedStampSprite: {fileID: 0}
-  windowSprite: {fileID: 0}
-  sceneCanvas: {fileID: 0}
-  bulletinBoardPosition: {x: -200, y: 100}
-  bulletinBoardSize: {x: 600, y: 400}
-  flowerPosition: {x: 350, y: 250}
-  flowerSize: {x: 150, y: 150}
-  printerPosition: {x: -350, y: -150}
-  printerSize: {x: 200, y: 200}
-  shredderPosition: {x: 350, y: -150}
-  shredderSize: {x: 200, y: 200}
-  ticketPosition: {x: 0, y: 0}
-  ticketSize: {x: 100, y: 100}
-  approvedStampPosition: {x: 200, y: 150}
-  approvedStampSize: {x: 120, y: 120}
-  windowPosition: {x: -350, y: 250}
-  windowSize: {x: 180, y: 160}
 --- !u!114 &1723426275
 MonoBehaviour:
   m_ObjectHideFlags: 0
