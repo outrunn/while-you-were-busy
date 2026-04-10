@@ -44,7 +44,7 @@ public class MinigameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Open a minigame by type. Closes any currently open minigame first.
+    /// Open a minigame by type (except Typing). Closes any currently open minigame first.
     /// </summary>
     public void OpenMinigame(MinigameType type, System.Action onComplete)
     {
@@ -54,50 +54,45 @@ public class MinigameManager : MonoBehaviour
             currentlyOpenMinigame.CloseMinigame();
         }
 
+        if (type == MinigameType.Typing)
+        {
+            SystemLog.Instance?.LogMessage("Use OpenTypingMinigame() for typing minigames!");
+            return;
+        }
+
         // Get the minigame for this type
         BaseMinigameUI minigame = GetMinigameByType(type);
 
         if (minigame != null)
         {
             currentlyOpenMinigame = minigame;
-
-            // Open the minigame with the completion callback
-            switch (type)
-            {
-                case MinigameType.Typing:
-                    if (typingMinigame != null)
-                    {
-                        // TypingMinigameUI.StartMinigame requires a TypingTaskSO parameter
-                        // This is handled by Ticket directly; MinigameManager just tracks it
-                        currentlyOpenMinigame = typingMinigame as BaseMinigameUI;
-                    }
-                    break;
-
-                case MinigameType.Math:
-                    if (mathMinigame != null)
-                    {
-                        mathMinigame.StartMinigame(onComplete);
-                    }
-                    break;
-
-                case MinigameType.MultipleChoice:
-                    if (multipleChoiceMinigame != null)
-                    {
-                        multipleChoiceMinigame.StartMinigame(onComplete);
-                    }
-                    break;
-
-                case MinigameType.PhotoReveal:
-                    if (photoRevealMinigame != null)
-                    {
-                        photoRevealMinigame.StartMinigame(onComplete);
-                    }
-                    break;
-            }
+            minigame.StartMinigame(onComplete);
         }
         else
         {
             SystemLog.Instance?.LogMessage($"Minigame {type} not found in scene!");
+        }
+    }
+
+    /// <summary>
+    /// Open a typing minigame with the required task data.
+    /// </summary>
+    public void OpenTypingMinigame(TypingTaskSO task, System.Action onComplete)
+    {
+        // Close any currently open minigame
+        if (currentlyOpenMinigame != null)
+        {
+            currentlyOpenMinigame.CloseMinigame();
+        }
+
+        if (typingMinigame != null)
+        {
+            currentlyOpenMinigame = typingMinigame;
+            typingMinigame.StartMinigame(task, onComplete);
+        }
+        else
+        {
+            SystemLog.Instance?.LogMessage("TypingMinigameUI not found in scene!");
         }
     }
 

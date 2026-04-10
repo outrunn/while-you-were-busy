@@ -153,56 +153,36 @@ public class Ticket : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
             return;
         }
 
-        // Dispatch to appropriate minigame based on task type
+        // Route all minigames through MinigameManager
+        if (MinigameManager.Instance == null)
+        {
+            Debug.LogError("MinigameManager not found in scene!");
+            return;
+        }
+
         switch (taskData.minigameType)
         {
             case MinigameType.Typing:
-                if (taskData.typingTask != null && TypingMinigameUI.Instance != null)
+                if (taskData.typingTask != null)
                 {
-                    TypingMinigameUI.Instance.StartMinigame(taskData.typingTask, OnMinigameCompleted);
-                    Debug.Log($"Starting typing minigame for: {taskTitle}");
+                    MinigameManager.Instance.OpenTypingMinigame(taskData.typingTask, OnMinigameCompleted);
                 }
                 else
                 {
-                    Debug.LogError("Typing task data missing or TypingMinigameUI not in scene!");
-                }
-                break;
-
-            case MinigameType.MultipleChoice:
-                Debug.Log($"MC task detected: {taskTitle}. Instance={MultipleChoiceMinigameUI.Instance}");
-                if (MultipleChoiceMinigameUI.Instance != null)
-                {
-                    MultipleChoiceMinigameUI.Instance.StartMinigame(OnMinigameCompleted);
-                    Debug.Log($"Starting multiple choice minigame for: {taskTitle}");
-                }
-                else
-                {
-                    Debug.LogError("MultipleChoiceMinigameUI not in scene!");
+                    Debug.LogError("Typing task data missing!");
                 }
                 break;
 
             case MinigameType.Math:
-                if (MathMinigameUI.Instance != null)
-                {
-                    MathMinigameUI.Instance.StartMinigame(OnMinigameCompleted);
-                    Debug.Log($"Starting math minigame for: {taskTitle}");
-                }
-                else
-                {
-                    Debug.LogError("MathMinigameUI not in scene!");
-                }
+                MinigameManager.Instance.OpenMinigame(MinigameType.Math, OnMinigameCompleted);
+                break;
+
+            case MinigameType.MultipleChoice:
+                MinigameManager.Instance.OpenMinigame(MinigameType.MultipleChoice, OnMinigameCompleted);
                 break;
 
             case MinigameType.PhotoReveal:
-                if (PhotoRevealMinigameUI.Instance != null)
-                {
-                    PhotoRevealMinigameUI.Instance.StartMinigame(OnMinigameCompleted);
-                    Debug.Log($"Starting photo reveal minigame for: {taskTitle}");
-                }
-                else
-                {
-                    Debug.LogError("PhotoRevealMinigameUI not in scene!");
-                }
+                MinigameManager.Instance.OpenMinigame(MinigameType.PhotoReveal, OnMinigameCompleted);
                 break;
 
             default:
