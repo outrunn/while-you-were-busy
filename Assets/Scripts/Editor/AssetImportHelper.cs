@@ -10,8 +10,6 @@ using System.IO;
 /// </summary>
 public class AssetImportHelper
 {
-    private static string ASSETS_FOLDER = "Assets/UI_Assets";
-    private static string SPRITES_FOLDER = "Assets/Sprites";
 
     [MenuItem("Tools/Setup Scene Assets from UI_Assets")]
     public static void SetupSceneAssets()
@@ -67,40 +65,7 @@ public class AssetImportHelper
         importer.SaveAndReimport();
     }
 
-    [MenuItem("Tools/Create Scene from Imported Assets")]
-    public static void CreateSceneWithAssets()
-    {
-        // Create a new scene
-        Scene newScene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-
-        // Create Canvas
-        GameObject canvasObject = new GameObject("Canvas");
-        Canvas canvas = canvasObject.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-
-        CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920, 1080);
-
-        canvasObject.AddComponent<GraphicRaycaster>();
-
-        // Add SceneAssetSetup component
-        SceneAssetSetup setupComponent = canvasObject.AddComponent<SceneAssetSetup>();
-
-        // Load and assign sprites
-        AssignSpritesToComponent(setupComponent);
-
-        // Save scene
-        string scenePath = "Assets/Scenes/GameScene.unity";
-        EditorSceneManager.SaveScene(newScene, scenePath);
-
-        EditorUtility.DisplayDialog("Scene Created", $"Scene created at {scenePath}", "OK");
-    }
-
-    private static void AssignSpritesToComponent(SceneAssetSetup setupComponent)
-    {
-        // This would need reflection or a more complex setup
-        // For now, user can manually assign sprites in the inspector
-        Debug.Log("Please assign sprites to the SceneAssetSetup component in the inspector");
-    }
+    // Deprecated: CreateSceneWithAssets removed - use GameSetup.cs instead
+    // The SceneAssetSetup helper was archived as part of cleanup
+    // Scenes should be configured via GameSetup.cs (Utilities folder)
 }
