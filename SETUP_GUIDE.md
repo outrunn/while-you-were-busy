@@ -15,14 +15,18 @@ In the Inspector, the `GameBootstrapper` component should have references to:
 
 If any system shows as missing, find it in the scene hierarchy and drag it to the corresponding field.
 
-### 3. Ensure All Systems Exist in the Scene
-The scene must contain these GameObjects:
+### 3. Verify All Essential GameObjects Exist
+The scene should contain these GameObjects (verified ✓):
 - ✓ **Canvas** (UI root)
 - ✓ **GameBootstrapper** (initialization, auto-discovers systems)
-- ✓ **GameManager** (core game logic)
-- ✓ **Printer** (ticket spawning)
-- ✓ **BulletinBoard** (ticket management)
-- ✓ **MinigameManager** (minigame routing)
+- ✓ **Main Camera** (tagged "MainCamera" for rendering)
+- ✓ **Directional Light** (scene lighting)
+
+The following systems are auto-discovered by GameBootstrapper:
+- **GameManager** (core game logic)
+- **Printer** (ticket spawning)
+- **BulletinBoard** (ticket management)
+- **MinigameManager** (minigame routing)
 
 If any are missing, they need to be created or imported from prefabs.
 
