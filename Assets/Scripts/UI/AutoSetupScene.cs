@@ -56,7 +56,7 @@ public class AutoSetupScene : MonoBehaviour
             CreateAsset("Laptop", canvas, laptop, new Vector2(0f, 0f), new Vector2(900f, 600f));
 
         if (frame != null)
-            CreateAsset("Frame", frame, new Vector2(0f, 0f), new Vector2(800f, 600f));
+            CreateAsset("Frame", canvas, frame, new Vector2(0f, 0f), new Vector2(800f, 600f));
 
         Debug.Log("[AutoSetupScene] ✓ All UI assets loaded from Resources!");
     }
