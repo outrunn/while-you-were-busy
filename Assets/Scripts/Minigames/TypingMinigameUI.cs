@@ -4,35 +4,28 @@ using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// Controls the typing minigame UI window.
-/// Displays a fake Google Docs interface where the player spams keys to "type" a predetermined message.
+/// Typing minigame: player spams keys to "type" a predetermined message.
+/// Displays a fake Google Docs interface with text reveal animation.
 /// </summary>
-public class TypingMinigameUI : MonoBehaviour
+public class TypingMinigameUI : BaseMinigameUI
 {
     public static TypingMinigameUI Instance { get; private set; }
 
-    [Header("UI References")]
-    [SerializeField] private GameObject minigameWindow;
+    [Header("Typing UI References")]
     [SerializeField] private TextMeshProUGUI documentTitleText;
     [SerializeField] private TextMeshProUGUI documentContentText;
     [SerializeField] private TextMeshProUGUI progressText;
     [SerializeField] private Image progressBar;
 
-    [Header("Settings")]
-    [SerializeField] private float typingSpeed = 0.05f; // TODO: implement variable typing speed
+    [Header("Typing Settings")]
     [SerializeField] private bool showProgressBar = true;
 
-    // Current minigame state
+    // Game-specific state
     private TypingTaskSO currentTask;
     private string fullMessage;
     private int currentCharacterIndex = 0;
     private int requiredKeyPresses = 0;
     private int currentKeyPresses = 0;
-    private bool isActive = false;
-    private bool isCompleted = false;
-
-    // Completion callback
-    private System.Action onMinigameCompleted;
 
     // Canvas reference for layering
     private Canvas minigameCanvas;
