@@ -90,4 +90,11 @@ public class GameBootstrapper : MonoBehaviour
 
         Debug.Log("[GameBootstrapper] ✓ All systems initialized. Game ready to start.");
     }
+
+    private void Start()
+    {
+        // After all systems are initialized, set up UI assets from Resources
+        Debug.Log("[GameBootstrapper] Setting up UI assets...");
+        AutoSetupScene.SetupAllAssets();
+    }
 }
