@@ -7,24 +7,15 @@ using System.Collections;
 /// Math minigame: player solves arithmetic problems (addition/subtraction) by typing the answer.
 /// Keyboard-only input. Wrong answer flashes red and clears. Enter to submit.
 /// </summary>
-public class MathMinigameUI : MonoBehaviour
+public class MathMinigameUI : BaseMinigameUI
 {
     public static MathMinigameUI Instance { get; private set; }
 
     [Header("UI References")]
-    [SerializeField] private GameObject minigameWindow;
     [SerializeField] private TextMeshProUGUI problemText;
     [SerializeField] private TMP_InputField inputField; // TMP Input Field for player input
     [SerializeField] private TextMeshProUGUI feedbackText;
     [SerializeField] private Image windowBackground;
-
-    [Header("Settings")]
-    [SerializeField] private float completionDelay = 2.5f;
-    [SerializeField] private float wrongAnswerFlashDuration = 0.3f;
-
-    private bool isActive = false;
-    private bool isCompleted = false;
-    private System.Action onMinigameCompleted;
 
     private int firstOperand;
     private int secondOperand;
@@ -64,40 +55,28 @@ public class MathMinigameUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Start the minigame
+    /// Override StartMinigame to initialize the math problem
     /// </summary>
-    public void StartMinigame(System.Action completionCallback)
+    public override void StartMinigame(System.Action completionCallback)
     {
-        Debug.Log("MathMinigameUI.StartMinigame called");
         onMinigameCompleted = completionCallback;
         isActive = true;
         isCompleted = false;
 
         // Generate random problem based on difficulty
         GenerateProblem();
-        Debug.Log($"Problem: {firstOperand} {operation} {secondOperand}, inputField: {inputField}");
 
         // Display problem
         if (problemText != null)
         {
             problemText.text = $"{firstOperand} {operation} {secondOperand} = ?";
-            Debug.Log($"Set problem text");
-        }
-        else
-        {
-            Debug.LogError("problemText is NULL!");
         }
 
         // Clear input field
         if (inputField != null)
         {
             inputField.text = "";
-            inputField.ActivateInputField(); // Focus on input field
-            Debug.Log($"Activated input field");
-        }
-        else
-        {
-            Debug.LogError("inputField is NULL!");
+            inputField.ActivateInputField();
         }
 
         // Clear feedback
@@ -107,10 +86,7 @@ public class MathMinigameUI : MonoBehaviour
         }
 
         // Show window
-        if (minigameWindow != null)
-        {
-            minigameWindow.SetActive(true);
-        }
+        ShowWindow();
     }
 
     /// <summary>
@@ -183,7 +159,7 @@ public class MathMinigameUI : MonoBehaviour
                     feedbackText.color = Color.green;
                 }
 
-                CompleteMinigame();
+                CompleteMinigameInternal();
             }
             else
             {
@@ -197,7 +173,7 @@ public class MathMinigameUI : MonoBehaviour
                 // Flash the background red
                 if (windowBackground != null)
                 {
-                    StartCoroutine(FlashRed());
+                    StartCoroutine(FlashRed(windowBackground));
                 }
 
                 // Clear input field
@@ -210,49 +186,26 @@ public class MathMinigameUI : MonoBehaviour
         }
     }
 
+
     /// <summary>
-    /// Coroutine to flash background red on wrong answer
+    /// Override CompleteMinigame to use base class implementation
     /// </summary>
-    private IEnumerator FlashRed()
+    private void CompleteMinigameInternal()
     {
-        Color originalColor = windowBackground.color;
-        windowBackground.color = Color.red;
-        yield return new WaitForSeconds(wrongAnswerFlashDuration);
-        windowBackground.color = originalColor;
+        CompleteMinigame(); // Call base class method
     }
 
     /// <summary>
-    /// Complete the minigame
+    /// Override CloseMinigame to reset game state
     /// </summary>
-    private void CompleteMinigame()
+    public override void CloseMinigame()
     {
-        isCompleted = true;
-        isActive = false;
-        StartCoroutine(CloseAfterDelay(completionDelay));
-    }
+        base.CloseMinigame();
 
-    /// <summary>
-    /// Wait then call completion callback and close
-    /// </summary>
-    private IEnumerator CloseAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        onMinigameCompleted?.Invoke();
-        CloseMinigame();
-    }
-
-    /// <summary>
-    /// Close the minigame window
-    /// </summary>
-    public void CloseMinigame()
-    {
-        isActive = false;
-        isCompleted = false;
-        onMinigameCompleted = null;
-
-        if (minigameWindow != null)
+        // Reset input field
+        if (inputField != null)
         {
-            minigameWindow.SetActive(false);
+            inputField.text = "";
         }
     }
 }

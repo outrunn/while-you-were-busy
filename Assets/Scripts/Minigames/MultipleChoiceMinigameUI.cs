@@ -7,21 +7,16 @@ using System.Collections;
 /// Multiple Choice minigame: answer a work-themed question with 4 options.
 /// One wrong answer triggers a red flash and input is reset. Correct answer completes immediately.
 /// </summary>
-public class MultipleChoiceMinigameUI : MonoBehaviour
+public class MultipleChoiceMinigameUI : BaseMinigameUI
 {
     public static MultipleChoiceMinigameUI Instance { get; private set; }
 
     [Header("UI References")]
-    [SerializeField] private GameObject minigameWindow;
     [SerializeField] private TextMeshProUGUI questionText;
     [SerializeField] private Button[] answerButtons = new Button[4];
     [SerializeField] private TextMeshProUGUI[] answerTexts = new TextMeshProUGUI[4];
     [SerializeField] private TextMeshProUGUI feedbackText;
     [SerializeField] private Image windowBackground;
-
-    [Header("Settings")]
-    [SerializeField] private float completionDelay = 2.5f;
-    [SerializeField] private float wrongAnswerFlashDuration = 0.3f;
 
     // Question/Answer data
     private struct QuestionData
@@ -83,9 +78,6 @@ public class MultipleChoiceMinigameUI : MonoBehaviour
         }
     };
 
-    private bool isActive = false;
-    private bool isCompleted = false;
-    private System.Action onMinigameCompleted;
     private QuestionData currentQuestion;
 
     private void Awake()
@@ -127,10 +119,48 @@ public class MultipleChoiceMinigameUI : MonoBehaviour
         }
     }
 
+
     /// <summary>
-    /// Start the minigame
+    /// Called when player clicks an answer button
     /// </summary>
-    public void StartMinigame(System.Action completionCallback)
+    private void OnAnswerClicked(int answerIndex)
+    {
+        Debug.Log($"OnAnswerClicked: {answerIndex}, isActive={isActive}, isCompleted={isCompleted}");
+        if (!isActive || isCompleted) return;
+
+        Debug.Log($"Checking answer {answerIndex} vs correct {currentQuestion.correctAnswerIndex}");
+        if (answerIndex == currentQuestion.correctAnswerIndex)
+        {
+            // Correct!
+            if (feedbackText != null)
+            {
+                feedbackText.text = "Correct!";
+                feedbackText.color = Color.green;
+            }
+
+            CompleteMinigame();
+        }
+        else
+        {
+            // Wrong answer
+            if (feedbackText != null)
+            {
+                feedbackText.text = "Incorrect! Try again.";
+                feedbackText.color = Color.red;
+            }
+
+            // Flash the background red
+            if (windowBackground != null)
+            {
+                StartCoroutine(FlashRed(windowBackground));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Override StartMinigame to initialize answer buttons
+    /// </summary>
+    public override void StartMinigame(System.Action completionCallback)
     {
         Debug.Log("MultipleChoiceMinigameUI.StartMinigame called");
         onMinigameCompleted = completionCallback;
@@ -184,92 +214,23 @@ public class MultipleChoiceMinigameUI : MonoBehaviour
         }
 
         // Show window
-        if (minigameWindow != null)
-        {
-            minigameWindow.SetActive(true);
-        }
+        ShowWindow();
     }
 
     /// <summary>
-    /// Called when player clicks an answer button
+    /// Override CloseMinigame to ensure proper state reset
     /// </summary>
-    private void OnAnswerClicked(int answerIndex)
+    public override void CloseMinigame()
     {
-        Debug.Log($"OnAnswerClicked: {answerIndex}, isActive={isActive}, isCompleted={isCompleted}");
-        if (!isActive || isCompleted) return;
+        base.CloseMinigame();
 
-        Debug.Log($"Checking answer {answerIndex} vs correct {currentQuestion.correctAnswerIndex}");
-        if (answerIndex == currentQuestion.correctAnswerIndex)
+        // Clear button listeners
+        for (int i = 0; i < answerButtons.Length; i++)
         {
-            // Correct!
-            if (feedbackText != null)
+            if (answerButtons[i] != null)
             {
-                feedbackText.text = "Correct!";
-                feedbackText.color = Color.green;
+                answerButtons[i].onClick.RemoveAllListeners();
             }
-
-            CompleteMinigame();
-        }
-        else
-        {
-            // Wrong answer
-            if (feedbackText != null)
-            {
-                feedbackText.text = "Incorrect! Try again.";
-                feedbackText.color = Color.red;
-            }
-
-            // Flash the background red
-            if (windowBackground != null)
-            {
-                StartCoroutine(FlashRed());
-            }
-        }
-    }
-
-    /// <summary>
-    /// Coroutine to flash background red on wrong answer
-    /// </summary>
-    private IEnumerator FlashRed()
-    {
-        Color originalColor = windowBackground.color;
-        windowBackground.color = Color.red;
-        yield return new WaitForSeconds(wrongAnswerFlashDuration);
-        windowBackground.color = originalColor;
-    }
-
-    /// <summary>
-    /// Complete the minigame
-    /// </summary>
-    private void CompleteMinigame()
-    {
-        isCompleted = true;
-        isActive = false;
-        StartCoroutine(CloseAfterDelay(completionDelay));
-    }
-
-    /// <summary>
-    /// Wait then call completion callback and close
-    /// </summary>
-    private IEnumerator CloseAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        onMinigameCompleted?.Invoke();
-        CloseMinigame();
-    }
-
-    /// <summary>
-    /// Close the minigame window
-    /// </summary>
-    public void CloseMinigame()
-    {
-        isActive = false;
-        isCompleted = false;
-        onMinigameCompleted = null;
-
-        if (minigameWindow != null)
-        {
-            minigameWindow.SetActive(false);
         }
     }
 }

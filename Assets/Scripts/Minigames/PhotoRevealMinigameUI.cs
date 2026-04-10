@@ -9,12 +9,11 @@ using System.Collections.Generic;
 /// Photo Reveal minigame: player hovers mouse over mosaic tiles to reveal a hidden image.
 /// When X% of tiles are revealed, minigame completes.
 /// </summary>
-public class PhotoRevealMinigameUI : MonoBehaviour
+public class PhotoRevealMinigameUI : BaseMinigameUI
 {
     public static PhotoRevealMinigameUI Instance { get; private set; }
 
     [Header("UI References")]
-    [SerializeField] private GameObject minigameWindow;
     [SerializeField] private Transform imageContainer;
     [SerializeField] private TextMeshProUGUI progressText;
     [SerializeField] private GameObject tilePrefab;
@@ -23,7 +22,6 @@ public class PhotoRevealMinigameUI : MonoBehaviour
     [SerializeField] private int tileCountX = 6;
     [SerializeField] private int tileCountY = 6;
     [SerializeField] private float revealThreshold = 0.8f; // 80% revealed to complete
-    [SerializeField] private float completionDelay = 2.5f;
     [SerializeField] private Sprite revealSprite;
 
     // Tile data
@@ -37,9 +35,6 @@ public class PhotoRevealMinigameUI : MonoBehaviour
     private Tile[] tiles;
     private int totalTiles;
     private int revealedCount = 0;
-    private bool isActive = false;
-    private bool isCompleted = false;
-    private System.Action onMinigameCompleted;
 
     // Colors for mosaic effect
     private Color[] mosaicColors = new Color[]
@@ -69,9 +64,9 @@ public class PhotoRevealMinigameUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Start the minigame
+    /// Override StartMinigame to initialize the tile grid
     /// </summary>
-    public void StartMinigame(System.Action completionCallback)
+    public override void StartMinigame(System.Action completionCallback)
     {
         onMinigameCompleted = completionCallback;
         isActive = true;
@@ -88,10 +83,7 @@ public class PhotoRevealMinigameUI : MonoBehaviour
         }
 
         // Show window
-        if (minigameWindow != null)
-        {
-            minigameWindow.SetActive(true);
-        }
+        ShowWindow();
 
         UpdateProgress();
     }
@@ -236,37 +228,21 @@ public class PhotoRevealMinigameUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Complete the minigame
+    /// Override CloseMinigame to clean up tiles
     /// </summary>
-    private void CompleteMinigame()
+    public override void CloseMinigame()
     {
-        isCompleted = true;
-        isActive = false;
-        StartCoroutine(CloseAfterDelay(completionDelay));
-    }
+        base.CloseMinigame();
 
-    /// <summary>
-    /// Wait then call completion callback and close
-    /// </summary>
-    private IEnumerator CloseAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        onMinigameCompleted?.Invoke();
-        CloseMinigame();
-    }
-
-    /// <summary>
-    /// Close the minigame window
-    /// </summary>
-    public void CloseMinigame()
-    {
-        isActive = false;
-        isCompleted = false;
-        onMinigameCompleted = null;
-
-        if (minigameWindow != null)
+        // Destroy all tiles
+        if (imageContainer != null)
         {
-            minigameWindow.SetActive(false);
+            foreach (Transform child in imageContainer)
+            {
+                Destroy(child.gameObject);
+            }
         }
+
+        tiles = null;
     }
 }

@@ -78,6 +78,18 @@ public class TypingMinigameUI : BaseMinigameUI
     }
 
     /// <summary>
+    /// Abstract method implementation — this version accepts a TypingTaskSO
+    /// </summary>
+    public override void StartMinigame(System.Action completionCallback)
+    {
+        // This base implementation is called by MinigameManager, but we need the task data
+        // Actual typing minigame start requires a TypingTaskSO parameter
+        // For now, we just set the callback and note that this shouldn't be called directly
+        Debug.LogWarning("TypingMinigameUI.StartMinigame(Action) called without task data. Use StartMinigame(TypingTaskSO, Action) instead.");
+        onMinigameCompleted = completionCallback;
+    }
+
+    /// <summary>
     /// Opens the typing minigame with the specified task
     /// </summary>
     public void StartMinigame(TypingTaskSO task, System.Action completionCallback)
@@ -146,7 +158,7 @@ public class TypingMinigameUI : BaseMinigameUI
         // Check if completed
         if (currentKeyPresses >= requiredKeyPresses || currentCharacterIndex >= fullMessage.Length)
         {
-            CompleteMinigame();
+            CompleteMinigameTyping();
         }
     }
 
@@ -169,14 +181,11 @@ public class TypingMinigameUI : BaseMinigameUI
     }
 
     /// <summary>
-    /// Marks the minigame as complete and triggers callback
+    /// Complete the typing minigame and show the full message
     /// </summary>
-    private void CompleteMinigame()
+    private void CompleteMinigameTyping()
     {
         if (isCompleted) return;
-
-        isCompleted = true;
-        isActive = false;
 
         // Show full message
         if (documentContentText != null && currentCharacterIndex < fullMessage.Length)
@@ -186,38 +195,21 @@ public class TypingMinigameUI : BaseMinigameUI
 
         Debug.Log("Typing minigame completed!");
 
-        // Auto-close after delay
+        // Use the base class CompleteMinigame with custom delay
         float delay = currentTask != null ? currentTask.completionDelay : 2.5f;
+        isCompleted = true;
+        isActive = false;
+        onMinigameCompleted?.Invoke();
         StartCoroutine(CloseAfterDelay(delay));
     }
 
     /// <summary>
-    /// Closes the minigame window after a delay and invokes completion callback
+    /// Override CloseMinigame to reset game state
     /// </summary>
-    private IEnumerator CloseAfterDelay(float delay)
+    public override void CloseMinigame()
     {
-        yield return new WaitForSeconds(delay);
-
-        // Invoke completion callback before closing (this will call GameManager.CompleteTask via Ticket.OnMinigameCompleted)
-        onMinigameCompleted?.Invoke();
-
-        CloseMinigame();
-    }
-
-    /// <summary>
-    /// Closes the minigame window immediately
-    /// </summary>
-    public void CloseMinigame()
-    {
-        isActive = false;
-        isCompleted = false;
+        base.CloseMinigame();
         currentTask = null;
-        onMinigameCompleted = null;
-
-        if (minigameWindow != null)
-        {
-            minigameWindow.SetActive(false);
-        }
     }
 
     /// <summary>
@@ -236,8 +228,6 @@ public class TypingMinigameUI : BaseMinigameUI
         }
     }
 
-    #region Helper Methods
-
     /// <summary>
     /// Gets the current completion percentage
     /// </summary>
@@ -246,22 +236,4 @@ public class TypingMinigameUI : BaseMinigameUI
         if (requiredKeyPresses <= 0) return 0f;
         return Mathf.Clamp01((float)currentKeyPresses / requiredKeyPresses);
     }
-
-    /// <summary>
-    /// Checks if the minigame is currently active
-    /// </summary>
-    public bool IsActive()
-    {
-        return isActive;
-    }
-
-    /// <summary>
-    /// Checks if the minigame is completed
-    /// </summary>
-    public bool IsCompleted()
-    {
-        return isCompleted;
-    }
-
-    #endregion
 }
