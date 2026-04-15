@@ -8,7 +8,7 @@ public class UpgradeManager : MonoBehaviour
     {
         // Day 1 upgrades
         new Upgrade(UpgradeType.FasterTyping, "Faster Typing", "Fewer key presses required", 1),
-        new Upgrade(UpgradeType.AutoStamp, "Auto-Stamp", "No dragging required", 1),
+        new Upgrade(UpgradeType.BoostedQuotaDay2, "Boosted Quota", "Start day two with boosted quota", 1),
 
         // Day 2 upgrades
         new Upgrade(UpgradeType.NumberLock, "Number Lock", "Show answer hints", 2),

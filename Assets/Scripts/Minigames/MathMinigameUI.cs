@@ -222,7 +222,7 @@ public class MathMinigameUI : BaseMinigameUI
     /// <summary>
     /// NumberLock upgrade shows the correct answer as a hint
     /// </summary>
-    protected override void OnUpgradePurchasedHandler(UpgradeType upgradeType)
+    protected override void OnUpgradePurchased(UpgradeType upgradeType)
     {
         if (upgradeType == UpgradeType.NumberLock)
         {

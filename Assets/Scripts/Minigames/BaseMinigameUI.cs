@@ -33,7 +33,7 @@ public abstract class BaseMinigameUI : MonoBehaviour
         // Subscribe to upgrade events
         if (GameEvents.Instance != null)
         {
-            GameEvents.Instance.OnUpgradePurchased += OnUpgradePurchased;
+            GameEvents.Instance.OnUpgradePurchased.AddListener(OnUpgradePurchased);
         }
     }
 
@@ -135,7 +135,7 @@ public abstract class BaseMinigameUI : MonoBehaviour
         // Unsubscribe from upgrade events
         if (GameEvents.Instance != null)
         {
-            GameEvents.Instance.OnUpgradePurchased -= OnUpgradePurchased;
+            GameEvents.Instance.OnUpgradePurchased.RemoveListener(OnUpgradePurchased);
         }
     }
 }

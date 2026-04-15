@@ -4,20 +4,20 @@ using System;
 public enum UpgradeType
 {
     // Day 1 - Typing
-    FasterTyping,      // Fewer key presses
-    AutoStamp,         // No dragging
+    FasterTyping,           // Fewer key presses
+    BoostedQuotaDay2,       // Start day two with boosted quota
 
     // Day 2 - Riddle
-    NumberLock,        // Show answer
-    BatchProcess,      // 2x processing
+    NumberLock,             // Show answer
+    BatchProcess,           // 2x processing
 
     // Day 3 - Photo Reveal
-    PreSorted,         // Files start sorted
-    QuickScan,         // Highlight error
+    PreSorted,              // Files start sorted
+    QuickScan,              // Highlight error
 
     // Day 4 - Connect Dots
-    Overclock,         // Faster printer
-    MemoryAssist,      // Show hints
+    Overclock,              // Faster printer
+    MemoryAssist,           // Show hints
 }
 
 [System.Serializable]
