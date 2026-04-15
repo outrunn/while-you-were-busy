@@ -30,51 +30,63 @@ public class MultipleChoiceMinigameUI : BaseMinigameUI
     {
         new QuestionData
         {
-            question = "Which file format is read-only?",
-            correctAnswerIndex = 2,
-            answers = new[] { "DOCX", "XLSX", "PDF", "TXT" }
-        },
-        new QuestionData
-        {
-            question = "What is the default backup interval?",
+            question = "How many months have exactly 28 days?",
             correctAnswerIndex = 0,
-            answers = new[] { "Daily", "Weekly", "Monthly", "Quarterly" }
+            answers = new[] { "12", "1", "6", "0" }
         },
         new QuestionData
         {
-            question = "Which protocol is most secure?",
-            correctAnswerIndex = 3,
-            answers = new[] { "HTTP", "FTP", "SSH", "TLS" }
-        },
-        new QuestionData
-        {
-            question = "Maximum file size per upload?",
-            correctAnswerIndex = 1,
-            answers = new[] { "256 MB", "512 MB", "1 GB", "2 GB" }
-        },
-        new QuestionData
-        {
-            question = "How many attempts for authentication?",
-            correctAnswerIndex = 2,
-            answers = new[] { "2", "3", "5", "10" }
-        },
-        new QuestionData
-        {
-            question = "What is the default password expiry?",
+            question = "What gets wetter the more it dries?",
             correctAnswerIndex = 0,
-            answers = new[] { "90 days", "6 months", "1 year", "Never" }
+            answers = new[] { "A towel", "A sponge", "Water", "Soap" }
         },
         new QuestionData
         {
-            question = "Which is a required field?",
-            correctAnswerIndex = 1,
-            answers = new[] { "Phone", "Email", "Department", "Notes" }
+            question = "You're running a race and pass the person in 2nd place. What place are you now in?",
+            correctAnswerIndex = 0,
+            answers = new[] { "2nd", "1st", "3rd", "It depends" }
         },
         new QuestionData
         {
-            question = "What time is the system maintenance window?",
-            correctAnswerIndex = 3,
-            answers = new[] { "9 AM", "12 PM", "3 PM", "2 AM" }
+            question = "Which is heavier: a pound of feathers or a pound of bricks?",
+            correctAnswerIndex = 0,
+            answers = new[] { "They weigh the same", "Feathers", "Bricks", "Depends on the bricks" }
+        },
+        new QuestionData
+        {
+            question = "How many sides does a circle have?",
+            correctAnswerIndex = 0,
+            answers = new[] { "2", "0", "1", "Infinite" }
+        },
+        new QuestionData
+        {
+            question = "If you have 3 apples and take away 2, how many do you have?",
+            correctAnswerIndex = 0,
+            answers = new[] { "2", "1", "3", "0" }
+        },
+        new QuestionData
+        {
+            question = "Before Mt. Everest was discovered, what was the tallest mountain?",
+            correctAnswerIndex = 0,
+            answers = new[] { "Everest", "K2", "Kilimanjaro", "No mountain" }
+        },
+        new QuestionData
+        {
+            question = "A plane crashes on the border of the U.S. and Canada. Where do they bury the survivors?",
+            correctAnswerIndex = 0,
+            answers = new[] { "Nowhere", "U.S.", "Canada", "Both" }
+        },
+        new QuestionData
+        {
+            question = "How many animals of each species did Moses take on the Ark?",
+            correctAnswerIndex = 0,
+            answers = new[] { "None", "2", "1", "7" }
+        },
+        new QuestionData
+        {
+            question = "If you drop a red shirt into the Red Sea, what happens?",
+            correctAnswerIndex = 0,
+            answers = new[] { "It gets wet", "It sinks", "It disappears", "It gets dyed" }
         }
     };
 
