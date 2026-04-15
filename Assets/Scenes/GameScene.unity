@@ -258,8 +258,8 @@ Camera:
   m_GateFitMode: 2
   m_FOVAxisMode: 0
   m_Iso: 200
-  m_ShutterSpeed: 0.005
-  m_Aperture: 16
+  m_ShutterSpeed: 1
+  m_Aperture: 2.2
   m_FocusDistance: 10
   m_FocalLength: 50
   m_BladeCount: 5
