@@ -17,6 +17,16 @@ public class MinigameFactory
             _currentMinigame.Close();
         }
 
+        // Dev mode: auto-win on minigame start
+        if (DevMode.AutoWinEnabled)
+        {
+            Debug.Log("[MinigameFactory] DEV MODE: Auto-win enabled, completing minigame immediately");
+            GameEvents.Instance?.OnMinigameStarted.Invoke(type);
+            GameEvents.Instance?.OnMinigameCompleted.Invoke(type);
+            onComplete?.Invoke();
+            return;
+        }
+
         IMinigame minigame = CreateMinigameInstance(type, typingTask);
         if (minigame != null)
         {

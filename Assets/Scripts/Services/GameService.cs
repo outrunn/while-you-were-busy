@@ -90,8 +90,9 @@ public class GameService : MonoBehaviour
             }
             else
             {
-                // Day 5 WIN
+                // Day 5 WIN - trigger reveal sequence
                 GameEvents.Instance?.OnGameWon.Invoke();
+                TriggerDay5Reveal();
             }
         }
         else
@@ -131,5 +132,18 @@ public class GameService : MonoBehaviour
     private void OnDayEnded()
     {
         _minigameFactory.Close();
+    }
+
+    private void TriggerDay5Reveal()
+    {
+        Day5RevealController revealController = FindFirstObjectByType<Day5RevealController>();
+        if (revealController == null)
+        {
+            // Create controller if it doesn't exist
+            GameObject revealObj = new GameObject("Day5RevealController");
+            revealController = revealObj.AddComponent<Day5RevealController>();
+        }
+
+        revealController.StartDay5Reveal();
     }
 }

@@ -9,6 +9,14 @@ public class Bootstrapper : MonoBehaviour
     {
         Debug.Log("[Bootstrapper] Starting initialization...");
 
+        // Setup dev mode
+        DevMode devMode = FindFirstObjectByType<DevMode>();
+        if (devMode == null)
+        {
+            GameObject devObj = new GameObject("DevMode");
+            devMode = devObj.AddComponent<DevMode>();
+        }
+
         // Setup event system first
         GameEvents events = GetComponentInChildren<GameEvents>();
         if (events == null)

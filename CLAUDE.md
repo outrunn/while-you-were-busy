@@ -33,6 +33,13 @@
 - **UpgradeManager.cs** — tracks purchased upgrades
 - **PlaceholderMinigameUI.cs** — instant-complete stub for Days 2-5
 
+## CRITICAL: MainWorld Architecture
+**USE MAINWORLD BULLETIN BOARD AND PRINTER - DO NOT CREATE DUPLICATES AT RUNTIME**
+- MainWorld prefab contains: "Bulletin Board" (SpriteRenderer), Printer image (gets deleted at runtime)
+- Tickets go to TicketBoard (Canvas RectTransform child) — NOT to MainWorld
+- PrinterController finds parent Canvas and creates/uses TicketBoard as boardContainer
+- Never instantiate extra Bulletin Boards or Printers in code
+
 ## TODO: Real Minigame Scripts (when ready)
 - RiddleMinigameUI.cs
 - MathMinigameUI.cs
