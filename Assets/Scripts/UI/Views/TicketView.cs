@@ -36,7 +36,7 @@ public class TicketView : MonoBehaviour, IPointerClickHandler, IBeginDragHandler
         _rect = GetComponent<RectTransform>();
         _canvas = GetComponentInParent<Canvas>().rootCanvas;
 
-        Debug.Log($"[TicketView] SetupWithModel for task: {model.TaskData.Title}, rect size: {_rect.sizeDelta}");
+        Debug.Log($"[TicketView] SetupWithModel for task: {model.TaskData.Title}, rect size: {_rect.sizeDelta}, scale: {_rect.localScale}, pos: {_rect.anchoredPosition}");
 
         // Setup UI
         if (titleText != null)
@@ -63,6 +63,7 @@ public class TicketView : MonoBehaviour, IPointerClickHandler, IBeginDragHandler
 
         // Apply color based on minigame type
         ApplyColorForMinigame(model.TaskData.MinigameType);
+
     }
 
     private void ApplyColorForMinigame(MinigameType type)
