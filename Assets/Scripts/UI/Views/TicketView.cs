@@ -36,6 +36,8 @@ public class TicketView : MonoBehaviour, IPointerClickHandler, IBeginDragHandler
         _rect = GetComponent<RectTransform>();
         _canvas = GetComponentInParent<Canvas>().rootCanvas;
 
+        Debug.Log($"[TicketView] SetupWithModel for task: {model.TaskData.Title}, rect size: {_rect.sizeDelta}");
+
         // Setup UI
         if (titleText != null)
             titleText.text = model.TaskData.Title;
