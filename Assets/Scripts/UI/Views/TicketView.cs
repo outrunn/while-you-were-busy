@@ -81,6 +81,11 @@ public class TicketView : MonoBehaviour, IPointerClickHandler, IBeginDragHandler
                 _ => Color.white
             };
             ticketBackground.color = color;
+            Debug.Log($"[TicketView] Set ticket color to {color} for {type}");
+        }
+        else
+        {
+            Debug.LogWarning("[TicketView] No ticket background Image found!");
         }
     }
 
