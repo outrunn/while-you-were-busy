@@ -81,6 +81,10 @@ public class Bootstrapper : MonoBehaviour
         // Initialize GameService with all dependencies
         gameService.Initialize(gameState, taskService, ticketService, minigameFactory, dayService);
 
+        // Setup Printer references
+        if (canvas.GetComponent<PrinterSetup>() == null)
+            canvas.gameObject.AddComponent<PrinterSetup>();
+
         // Initialize Controllers
         InitializeControllers(canvas, gameState, taskService, ticketService, minigameFactory);
 
@@ -108,14 +112,23 @@ public class Bootstrapper : MonoBehaviour
 
         // Initialize PrinterController
         PrinterController printerController = canvas.GetComponentInChildren<PrinterController>();
+        Debug.Log($"[Bootstrapper] Found PrinterController: {printerController != null}");
+
         if (printerController != null)
         {
             // Get GameService from the gameobject we created earlier
             GameService gameService = GetComponentInChildren<GameService>();
+            Debug.Log($"[Bootstrapper] Found GameService: {gameService != null}");
+
             if (gameService != null)
             {
+                Debug.Log("[Bootstrapper] Calling printerController.Initialize()");
                 printerController.Initialize(gameService, minigameFactory);
             }
+        }
+        else
+        {
+            Debug.LogWarning("[Bootstrapper] PrinterController not found in Canvas children!");
         }
     }
 }

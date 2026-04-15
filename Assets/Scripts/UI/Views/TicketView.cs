@@ -12,6 +12,7 @@ public class TicketView : MonoBehaviour, IPointerClickHandler, IBeginDragHandler
     [SerializeField] private Button startTaskButton;
     [SerializeField] private Image stampImage;
     [SerializeField] private CanvasGroup canvasGroup;
+    [SerializeField] private Image ticketBackground;
 
     private TicketModel _model;
     private RectTransform _rect;
@@ -20,6 +21,12 @@ public class TicketView : MonoBehaviour, IPointerClickHandler, IBeginDragHandler
     private Transform _originalParent;
     private bool _isExpanded = false;
     private Coroutine _expandCoroutine;
+
+    // Pastel colors for each minigame type
+    private static readonly Color TYPING_COLOR = new Color(0.9f, 0.8f, 0.7f, 1f);      // Pastel peach
+    private static readonly Color MATH_COLOR = new Color(0.9f, 0.8f, 0.9f, 1f);        // Pastel lavender
+    private static readonly Color MULTIPLE_CHOICE_COLOR = new Color(0.8f, 0.9f, 0.7f, 1f);  // Pastel mint
+    private static readonly Color PHOTO_COLOR = new Color(0.9f, 0.9f, 0.7f, 1f);       // Pastel yellow
 
     public TicketModel Model => _model;
 
@@ -46,7 +53,33 @@ public class TicketView : MonoBehaviour, IPointerClickHandler, IBeginDragHandler
             stampImage.gameObject.SetActive(false);
 
         if (canvasGroup == null)
-            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        {
+            canvasGroup = GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+                canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        }
+
+        // Apply color based on minigame type
+        ApplyColorForMinigame(model.TaskData.MinigameType);
+    }
+
+    private void ApplyColorForMinigame(MinigameType type)
+    {
+        if (ticketBackground == null)
+            ticketBackground = GetComponent<Image>();
+
+        if (ticketBackground != null)
+        {
+            Color color = type switch
+            {
+                MinigameType.Typing => TYPING_COLOR,
+                MinigameType.Math => MATH_COLOR,
+                MinigameType.MultipleChoice => MULTIPLE_CHOICE_COLOR,
+                MinigameType.PhotoReveal => PHOTO_COLOR,
+                _ => Color.white
+            };
+            ticketBackground.color = color;
+        }
     }
 
     public void UpdateModel(TicketModel newModel)

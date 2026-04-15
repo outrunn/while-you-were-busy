@@ -23,6 +23,42 @@ public class PrinterController : MonoBehaviour
     {
         _gameService = gameService;
         _minigameFactory = minigameFactory;
+
+        Debug.Log("[PrinterController] Initializing...");
+
+        // Load prefab if not assigned
+        if (ticketPrefab == null)
+        {
+            ticketPrefab = Resources.Load<GameObject>("Prefabs/Tickets/Ticket");
+            if (ticketPrefab == null)
+            {
+                Debug.LogError("PrinterController: Could not load Ticket prefab from Resources folder");
+                return;
+            }
+            Debug.Log("[PrinterController] Loaded ticket prefab from Resources");
+        }
+
+        // Find Board if not assigned
+        if (boardContainer == null)
+        {
+            Canvas canvas = GetComponentInParent<Canvas>();
+            if (canvas != null)
+            {
+                boardContainer = canvas.transform.Find("Board");
+                Debug.Log($"[PrinterController] Found board: {boardContainer != null}");
+            }
+            else
+            {
+                Debug.LogError("[PrinterController] Could not find parent Canvas");
+            }
+        }
+
+        if (boardContainer == null)
+        {
+            Debug.LogError("[PrinterController] Board container is null after initialization!");
+            return;
+        }
+
         _ticketFactory = new TicketViewFactory(ticketPrefab, boardContainer);
 
         if (printButton != null)
@@ -31,6 +67,7 @@ public class PrinterController : MonoBehaviour
         // Subscribe to events
         GameEvents.Instance.OnDayStarted.AddListener(ResetTimer);
 
+        Debug.Log("[PrinterController] ✓ Initialization complete, printing first ticket");
         PrintTicket(); // Print first ticket immediately
     }
 
