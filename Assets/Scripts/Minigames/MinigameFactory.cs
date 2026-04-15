@@ -32,8 +32,8 @@ public class MinigameFactory
 
     private IMinigame CreateMinigameInstance(MinigameType type, TypingTaskSO typingTask)
     {
-        // Load prefab from Resources/Minigames/
-        string prefabPath = $"Minigames/{type.ToString()}Minigame";
+        // Load prefab from Resources/Prefabs/Minigames/
+        string prefabPath = $"Prefabs/Minigames/{type.ToString()}Minigame";
         GameObject prefab = Resources.Load<GameObject>(prefabPath);
 
         if (prefab == null)

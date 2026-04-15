@@ -32,6 +32,7 @@ public class GameEvents : MonoBehaviour
 
     // Upgrade
     public UnityEvent<int> OnUpgradeApplied = new UnityEvent<int>();
+    public UnityEvent<UpgradeType> OnUpgradePurchased = new UnityEvent<UpgradeType>();
 
     private void Awake()
     {

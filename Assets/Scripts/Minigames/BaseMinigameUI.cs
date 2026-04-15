@@ -20,6 +20,24 @@ public abstract class BaseMinigameUI : MonoBehaviour
     protected System.Action onMinigameCompleted;
 
     /// <summary>
+    /// Called when an upgrade is purchased. Override in subclass to apply effects.
+    /// </summary>
+    protected virtual void OnUpgradePurchased(UpgradeType upgradeType)
+    {
+        // Base implementation: do nothing
+        // Subclasses override to apply upgrade-specific effects
+    }
+
+    private void Awake()
+    {
+        // Subscribe to upgrade events
+        if (GameEvents.Instance != null)
+        {
+            GameEvents.Instance.OnUpgradePurchased += OnUpgradePurchased;
+        }
+    }
+
+    /// <summary>
     /// Start the minigame with a completion callback.
     /// Subclasses implement game-specific setup here.
     /// </summary>
@@ -111,4 +129,13 @@ public abstract class BaseMinigameUI : MonoBehaviour
     /// Check if the minigame is completed.
     /// </summary>
     public bool IsCompleted() => isCompleted;
+
+    protected virtual void OnDestroy()
+    {
+        // Unsubscribe from upgrade events
+        if (GameEvents.Instance != null)
+        {
+            GameEvents.Instance.OnUpgradePurchased -= OnUpgradePurchased;
+        }
+    }
 }

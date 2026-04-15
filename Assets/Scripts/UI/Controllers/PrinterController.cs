@@ -38,18 +38,18 @@ public class PrinterController : MonoBehaviour
             Debug.Log("[PrinterController] Loaded ticket prefab from Resources");
         }
 
-        // Find Board if not assigned
+        // Find BulletinBoard from MainWorld if not assigned
         if (boardContainer == null)
         {
-            Canvas canvas = GetComponentInParent<Canvas>();
-            if (canvas != null)
+            GameObject mainWorld = GameObject.Find("MainWorld");
+            if (mainWorld != null)
             {
-                boardContainer = canvas.transform.Find("Board");
-                Debug.Log($"[PrinterController] Found board: {boardContainer != null}");
+                boardContainer = mainWorld.transform.Find("BulletinBoard");
+                Debug.Log($"[PrinterController] Found BulletinBoard from MainWorld: {boardContainer != null}");
             }
             else
             {
-                Debug.LogError("[PrinterController] Could not find parent Canvas");
+                Debug.LogError("[PrinterController] Could not find MainWorld GameObject");
             }
         }
 

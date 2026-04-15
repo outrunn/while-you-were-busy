@@ -4,12 +4,15 @@ using TMPro;
 
 public class DayService : MonoBehaviour
 {
-    [SerializeField] private GameObject upgradeModalPrefab;
+    private static readonly string UPGRADE_MODAL_PATH = "Prefabs/UI/UpgradeModal";
+
     [SerializeField] private GameObject endingPanelPrefab;
     [SerializeField] private Canvas canvas;
 
     private GameObject _upgradeModalInstance;
     private GameObject _endingPanelInstance;
+    private UpgradeManager _upgradeManager;
+    private GameObject _upgradeModalPrefab;
 
     private void Start()
     {
@@ -17,20 +20,40 @@ public class DayService : MonoBehaviour
         {
             canvas = FindFirstObjectByType<Canvas>();
         }
+
+        _upgradeManager = FindFirstObjectByType<UpgradeManager>();
+
+        // Load upgrade modal prefab from Resources
+        _upgradeModalPrefab = Resources.Load<GameObject>(UPGRADE_MODAL_PATH);
+        if (_upgradeModalPrefab == null)
+        {
+            Debug.LogError($"[DayService] Failed to load upgrade modal prefab from {UPGRADE_MODAL_PATH}");
+        }
     }
 
     public void ShowUpgradeModal(int completedDay)
     {
+        if (_upgradeManager == null)
+        {
+            Debug.LogError("UpgradeManager not found in scene!");
+            return;
+        }
+
         if (_upgradeModalInstance == null)
         {
-            _upgradeModalInstance = Instantiate(upgradeModalPrefab, canvas.transform);
+            if (_upgradeModalPrefab == null)
+            {
+                Debug.LogError("[DayService] Upgrade modal prefab not loaded!");
+                return;
+            }
+            _upgradeModalInstance = Instantiate(_upgradeModalPrefab, canvas.transform);
         }
 
         _upgradeModalInstance.SetActive(true);
         UpgradeModalController modal = _upgradeModalInstance.GetComponent<UpgradeModalController>();
         if (modal != null)
         {
-            modal.Setup(completedDay, () => _upgradeModalInstance.SetActive(false));
+            modal.Setup(completedDay, _upgradeManager, () => _upgradeModalInstance.SetActive(false));
         }
     }
 

@@ -69,6 +69,15 @@ public class Bootstrapper : MonoBehaviour
             dayService = dayObj.AddComponent<DayService>();
         }
 
+        // Get or create UpgradeManager
+        UpgradeManager upgradeManager = GetComponentInChildren<UpgradeManager>();
+        if (upgradeManager == null)
+        {
+            GameObject upgradeObj = new GameObject("UpgradeManager");
+            upgradeObj.transform.SetParent(transform);
+            upgradeManager = upgradeObj.AddComponent<UpgradeManager>();
+        }
+
         // Get or create GameService
         GameService gameService = GetComponentInChildren<GameService>();
         if (gameService == null)
@@ -79,7 +88,7 @@ public class Bootstrapper : MonoBehaviour
         }
 
         // Initialize GameService with all dependencies
-        gameService.Initialize(gameState, taskService, ticketService, minigameFactory, dayService);
+        gameService.Initialize(gameState, taskService, ticketService, minigameFactory, dayService, upgradeManager);
 
         // Setup Printer references
         if (canvas.GetComponent<PrinterSetup>() == null)

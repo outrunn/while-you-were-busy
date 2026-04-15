@@ -9,6 +9,7 @@ public class GameService : MonoBehaviour
     private TicketService _ticketService;
     private MinigameFactory _minigameFactory;
     private DayService _dayService;
+    private UpgradeManager _upgradeManager;
     private bool _isRunning = false;
 
     public GameState State => _gameState;
@@ -16,13 +17,14 @@ public class GameService : MonoBehaviour
     public TicketService Tickets => _ticketService;
 
     public void Initialize(GameState state, TaskService taskService, TicketService ticketService,
-                          MinigameFactory minigameFactory, DayService dayService)
+                          MinigameFactory minigameFactory, DayService dayService, UpgradeManager upgradeManager)
     {
         _gameState = state;
         _taskService = taskService;
         _ticketService = ticketService;
         _minigameFactory = minigameFactory;
         _dayService = dayService;
+        _upgradeManager = upgradeManager;
 
         // Subscribe to events
         GameEvents.Instance.OnTicketStamped.AddListener(OnTicketStamped);

@@ -9,64 +9,70 @@ public class UpgradeModalUI : MonoBehaviour
     [SerializeField] private Button leftButton;
     [SerializeField] private TextMeshProUGUI rightButtonText;
     [SerializeField] private Button rightButton;
+    [SerializeField] private CanvasGroup canvasGroup;
 
     private int _currentDay;
+    private UpgradeType _leftUpgradeType;
+    private UpgradeType _rightUpgradeType;
+    private UpgradeManager _upgradeManager;
     private System.Action _onClose;
 
-    public void Initialize(int day)
+    public void Initialize(int day, UpgradeManager upgradeManager, System.Action onClose)
     {
         _currentDay = day;
+        _upgradeManager = upgradeManager;
+        _onClose = onClose;
+
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
         if (titleText != null)
-            titleText.text = $"Day {day} - Choose an Upgrade";
+            titleText.text = $"Day {day} Complete - Choose an Upgrade";
+
+        // Clear previous listeners
+        leftButton.onClick.RemoveAllListeners();
+        rightButton.onClick.RemoveAllListeners();
 
         leftButton.onClick.AddListener(OnLeftChosen);
         rightButton.onClick.AddListener(OnRightChosen);
 
-        SetButtonTexts(day);
+        SetUpgradeOptions(day);
     }
 
-    private void SetButtonTexts(int day)
+    private void SetUpgradeOptions(int day)
     {
-        string left = "", right = "";
+        var upgradesForDay = _upgradeManager.GetUpgradesForDay(day);
 
-        switch (day)
+        if (upgradesForDay.Length >= 2)
         {
-            case 1:
-                left = "Faster Typing\n(Fewer key presses)";
-                right = "Auto-Stamp\n(No dragging)";
-                break;
-            case 2:
-                left = "Number Lock\n(Show answer)";
-                right = "Batch Process\n(2x processing)";
-                break;
-            case 3:
-                left = "Pre-Sorted\n(Files start sorted)";
-                right = "Quick Scan\n(Highlight error)";
-                break;
-            case 4:
-                left = "Overclock\n(Faster printer)";
-                right = "Memory Assist\n(Show hints)";
-                break;
-        }
+            var leftUpgrade = upgradesForDay[0];
+            var rightUpgrade = upgradesForDay[1];
 
-        if (leftButtonText != null)
-            leftButtonText.text = left;
-        if (rightButtonText != null)
-            rightButtonText.text = right;
+            _leftUpgradeType = leftUpgrade.Type;
+            _rightUpgradeType = rightUpgrade.Type;
+
+            if (leftButtonText != null)
+                leftButtonText.text = $"{leftUpgrade.DisplayName}\n({leftUpgrade.Description})";
+            if (rightButtonText != null)
+                rightButtonText.text = $"{rightUpgrade.DisplayName}\n({rightUpgrade.Description})";
+        }
     }
 
     private void OnLeftChosen()
     {
-        // Upgrade logic would be tied to GameService/UpgradeService here
-        Debug.Log($"Day {_currentDay} left upgrade chosen");
+        if (_upgradeManager != null)
+        {
+            _upgradeManager.PurchaseUpgrade(_leftUpgradeType);
+        }
         CloseModal();
     }
 
     private void OnRightChosen()
     {
-        // Upgrade logic would be tied to GameService/UpgradeService here
-        Debug.Log($"Day {_currentDay} right upgrade chosen");
+        if (_upgradeManager != null)
+        {
+            _upgradeManager.PurchaseUpgrade(_rightUpgradeType);
+        }
         CloseModal();
     }
 
