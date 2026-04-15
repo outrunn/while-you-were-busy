@@ -78,15 +78,27 @@ public class TypingMinigameUI : BaseMinigameUI
     }
 
     /// <summary>
+    /// Stores task for later use (called before StartMinigame)
+    /// </summary>
+    public void SetTask(TypingTaskSO task)
+    {
+        currentTask = task;
+    }
+
+    /// <summary>
     /// Abstract method implementation — this version accepts a TypingTaskSO
     /// </summary>
     public override void StartMinigame(System.Action completionCallback)
     {
-        // This base implementation is called by MinigameManager, but we need the task data
-        // Actual typing minigame start requires a TypingTaskSO parameter
-        // For now, we just set the callback and note that this shouldn't be called directly
-        Debug.LogWarning("TypingMinigameUI.StartMinigame(Action) called without task data. Use StartMinigame(TypingTaskSO, Action) instead.");
-        onMinigameCompleted = completionCallback;
+        if (currentTask != null)
+        {
+            StartMinigame(currentTask, completionCallback);
+        }
+        else
+        {
+            Debug.LogWarning("TypingMinigameUI.StartMinigame(Action) called without task data. Call SetTask first.");
+            onMinigameCompleted = completionCallback;
+        }
     }
 
     /// <summary>

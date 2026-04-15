@@ -77,10 +77,11 @@ public class PhotoRevealMinigameUI : BaseMinigameUI
         CreateTileGrid();
 
         // Apply memory assist upgrade if active (pre-reveals 30% of tiles)
-        if (UpgradeManager.Instance != null && UpgradeManager.Instance.IsMemoryAssistActive())
-        {
-            PrerevealTiles();
-        }
+        // TODO: Integrate with new UpgradeService
+        // if (UpgradeManager.Instance != null && UpgradeManager.Instance.IsMemoryAssistActive())
+        // {
+        //     PrerevealTiles();
+        // }
 
         // Show window
         ShowWindow();

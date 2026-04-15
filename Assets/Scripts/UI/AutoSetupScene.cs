@@ -52,33 +52,33 @@ public class AutoSetupScene : MonoBehaviour
 
         // Layer 0: Background wallpaper (behind everything)
         if (wallpaper != null)
-            CreateAsset("Wallpaper", canvas, wallpaper, new Vector2(960f, 540f), new Vector2(1920f, 1080f), 0, false);
+            CreateAsset("Wallpaper", canvas, wallpaper, new Vector2(0f, 0f), new Vector2(1920f, 1080f), 0, false);
 
         // Layer 1: Desk at bottom
         if (desk != null)
-            CreateAsset("Desk", canvas, desk, new Vector2(960f, 50f), new Vector2(1920f, 150f), 1, false);
+            CreateAsset("Desk", canvas, desk, new Vector2(0f, -490f), new Vector2(1920f, 150f), 1, false);
 
         // Layer 5: Main gameplay elements
         if (bulletinBoard != null)
-            CreateAsset("BulletinBoard", canvas, bulletinBoard, new Vector2(960f, 540f), new Vector2(600f, 350f), 5, false);
+            CreateAsset("BulletinBoard", canvas, bulletinBoard, new Vector2(0f, 0f), new Vector2(600f, 350f), 5, false);
 
         if (printer != null)
-            CreateAsset("Printer", canvas, printer, new Vector2(200f, 400f), new Vector2(250f, 300f), 5, false);
+            CreateAsset("Printer", canvas, printer, new Vector2(-760f, -140f), new Vector2(250f, 300f), 5, false);
 
         if (shredder != null)
-            CreateAsset("Shredder", canvas, shredder, new Vector2(1720f, 400f), new Vector2(200f, 280f), 5, false);
+            CreateAsset("Shredder", canvas, shredder, new Vector2(760f, -140f), new Vector2(200f, 280f), 5, false);
 
         if (flower != null)
-            CreateAsset("Flower", canvas, flower, new Vector2(350f, 300f), new Vector2(100f, 200f), 5, false);
+            CreateAsset("Flower", canvas, flower, new Vector2(-610f, -240f), new Vector2(100f, 200f), 5, false);
 
         if (window != null)
-            CreateAsset("Window", canvas, window, new Vector2(1500f, 600f), new Vector2(500f, 400f), 5, false);
+            CreateAsset("Window", canvas, window, new Vector2(540f, 60f), new Vector2(500f, 400f), 5, false);
 
         if (laptop != null)
-            CreateAsset("Laptop", canvas, laptop, new Vector2(960f, 500f), new Vector2(800f, 500f), 4, false);
+            CreateAsset("Laptop", canvas, laptop, new Vector2(0f, -40f), new Vector2(800f, 500f), 4, false);
 
         if (frame != null)
-            CreateAsset("Frame", canvas, frame, new Vector2(960f, 500f), new Vector2(700f, 500f), 3, false);
+            CreateAsset("Frame", canvas, frame, new Vector2(0f, -40f), new Vector2(700f, 500f), 3, false);
 
         Debug.Log("[AutoSetupScene] ✓ All UI assets loaded and positioned!");
     }
