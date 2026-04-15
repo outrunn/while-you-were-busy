@@ -127,7 +127,8 @@ public class PrinterController : MonoBehaviour
     private IEnumerator AnimateTicketToBoard(TicketView ticketView)
     {
         RectTransform rect = ticketView.GetComponent<RectTransform>();
-        Vector2 startPos = ticketSpawnPoint.GetComponent<RectTransform>().anchoredPosition;
+        // Start position is the ticket's current position in board space
+        Vector2 startPos = rect.anchoredPosition;
         Vector2 endPos = new Vector2(Random.Range(-80, 80), Random.Range(-50, 50)); // Random spot on board
 
         Debug.Log($"[PrinterController] Animating ticket from {startPos} to {endPos}");
@@ -140,13 +141,14 @@ public class PrinterController : MonoBehaviour
             t = Mathf.SmoothStep(0, 1, t);
 
             rect.anchoredPosition = Vector2.Lerp(startPos, endPos, t);
-            rect.localScale = Vector3.Lerp(Vector3.one * Constants.TICKET_MINI_SCALE, Vector3.one * Constants.TICKET_MINI_SCALE, t);
+            // Keep z-scale at 1 to preserve depth sorting
+            rect.localScale = new Vector3(Constants.TICKET_MINI_SCALE, Constants.TICKET_MINI_SCALE, 1f);
 
             yield return null;
         }
 
         rect.anchoredPosition = endPos;
-        rect.localScale = Vector3.one * Constants.TICKET_MINI_SCALE;
+        rect.localScale = new Vector3(Constants.TICKET_MINI_SCALE, Constants.TICKET_MINI_SCALE, 1f);
         Debug.Log($"[PrinterController] Ticket positioned at {endPos}");
     }
 
