@@ -16,6 +16,7 @@ public class MathMinigameUI : BaseMinigameUI
     [SerializeField] private TMP_InputField inputField; // TMP Input Field for player input
     [SerializeField] private TextMeshProUGUI feedbackText;
     [SerializeField] private Image windowBackground;
+    [SerializeField] private TextMeshProUGUI hintText;
 
     private int firstOperand;
     private int secondOperand;
@@ -84,6 +85,9 @@ public class MathMinigameUI : BaseMinigameUI
         {
             feedbackText.text = "";
         }
+
+        // Show hint if upgrade is active
+        ShowHintIfUpgradeActive();
 
         // Show window
         ShowWindow();
@@ -200,12 +204,48 @@ public class MathMinigameUI : BaseMinigameUI
     /// </summary>
     public override void CloseMinigame()
     {
+        // Clear hint
+        if (hintText != null)
+        {
+            hintText.text = "";
+        }
+
         base.CloseMinigame();
 
         // Reset input field
         if (inputField != null)
         {
             inputField.text = "";
+        }
+    }
+
+    /// <summary>
+    /// NumberLock upgrade shows the correct answer as a hint
+    /// </summary>
+    protected override void OnUpgradePurchasedHandler(UpgradeType upgradeType)
+    {
+        if (upgradeType == UpgradeType.NumberLock)
+        {
+            Debug.Log("NumberLock upgrade applied to Math minigame");
+            ShowHintIfUpgradeActive();
+        }
+    }
+
+    /// <summary>
+    /// Show hint if NumberLock upgrade is purchased
+    /// </summary>
+    private void ShowHintIfUpgradeActive()
+    {
+        if (!isActive) return;
+
+        if (GameEvents.Instance?.GetComponent<UpgradeManager>()?.IsUpgradePurchased(UpgradeType.NumberLock) ?? false)
+        {
+            if (hintText != null)
+            {
+                hintText.text = $"Answer: {correctAnswer}";
+                hintText.color = Color.yellow;
+                Debug.Log($"Hint shown: {correctAnswer}");
+            }
         }
     }
 }
